@@ -234,7 +234,7 @@ export default class Game {
                     this._togglePause();
                 return;
             }
-            else if (event.keyCode === 72) {
+            else if (event.keyCode === 72 || event.keyCode === 27) {
                 this._showHelp = !this._showHelp;
 
                 document.getElementById('help').className = 'help' + (this._showHelp ? '' : ' help_hidden');
