@@ -216,7 +216,7 @@ export default class Game {
 
     _bindKeys() {
         window.addEventListener('keyup', event => {
-            if (event.keyCode === 82) { // restart
+            if (event.keyCode === 82 || event.keyCode === 13) { // restart
                 if (this._showHelp)
                     return;
 
