@@ -1,0 +1,15 @@
+.snake-cell {
+    opacity: 0.2;
+    background-image: url('../img/cell.svg');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+    width: 10%;
+    height: 5%;
+    padding: 1vh;
+    display: flex;
+
+    &_active {
+        opacity: 0.9;
+    }
+}

@@ -1,0 +1,10 @@
+.snake {
+    border: 0.5vh solid;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: 50vh;
+    height: 100vh;
+} 

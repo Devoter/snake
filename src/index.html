@@ -1,0 +1,50 @@
+<doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Retro Snake</title>
+</head>
+<body>
+    <div class="container" id="display">
+        <div class="snake" id="snake">
+        </div>
+        <div class="info">
+            <div class="info-block">
+                <label class="info-block__label">Hi-Score</label>
+                <span class="info-block__value" id="high-score">0</span>
+            </div>
+            <div class="info-block">
+                <label class="info-block__label">Score</label>
+                <span class="info-block__value" id="score">0</span>
+            </div>
+            <div class="info-block">
+                <label class="info-block__label">Level</label>
+                <span class="info-block__value" id="level">0</span>
+            </div>
+            <div class="info-block">
+                <label class="info-block__label">Speed</label>
+                <span class="info-block__value" id="speed">0</span>
+            </div>
+            <div class="info-block">
+                <label class="info-block__label" id="pause"></label>
+            </div>
+            <div class="info-block">
+                <label class="info-block__label" id="game-over"></label>
+            </div>
+        </div>
+
+        <div class="help help_hidden" id="help">
+            <header class="help__header">CONTROLS</header>
+            <div class="help__content">
+W, ARROW UP    - Move up<br>
+S, ARROW DOWN  - Move down<br>
+A, ARROW LEFT  - Move left<br>
+D, ARROW RIGHT - Move right<br>
+P, SPACE       - Pause<br>
+R              - Restart<br>
+H              - Show this text
+            </div>
+        </div>
+    </div>
+</body>
+</html>

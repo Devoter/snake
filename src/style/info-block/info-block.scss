@@ -1,0 +1,18 @@
+.info-block {
+    display: flex;
+    flex-direction: column;
+    padding: 2vh;
+
+    &__label {
+        font-size: 3.5vh;
+        font-weight: bold;
+        display: block;
+        text-align: right;
+    }
+
+    &__value {
+        font-size: 3.5vh;
+        display: block;
+        text-align: right;
+    } 
+}

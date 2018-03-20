@@ -1,0 +1,13 @@
+.container {
+    font-family: monospace;
+    background-color: #6d775c;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid;
+    display: flex;
+    flex-direction: row;
+    width: 74vh;
+    height: 100vh;
+}
