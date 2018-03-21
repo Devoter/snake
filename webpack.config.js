@@ -15,7 +15,7 @@ let config = {
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: '[name].js',
-        publicPath: '/'
+        // publicPath: ''
     },
     module: {
         rules: [
@@ -92,7 +92,7 @@ let config = {
     plugins: [
     new CleanWebpackPlugin(['dist']),
         new HtmlWebpackPlugin({ template: './index.html' }),
-        new ExtractTextPlugin('css/style.css'),
+        new ExtractTextPlugin('style.css'),
         new CopyWebpackPlugin([
             {
                 from: './img',
