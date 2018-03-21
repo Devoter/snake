@@ -1,0 +1,98 @@
+<doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Retro Snake</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link href="/css/style.css" rel="stylesheet"></head>
+<body>
+    <div class="container" id="container">
+        <div class="display" id="display">
+            <div class="snake" id="snake"></div>
+
+            <div class="info">
+                <div class="info-block">
+                    <label class="info-block__label">Hi-Score</label>
+                    <span class="info-block__value" id="high-score">0</span>
+                </div>
+                <div class="info-block">
+                    <label class="info-block__label">Score</label>
+                    <span class="info-block__value" id="score">0</span>
+                </div>
+                <div class="info-block">
+                    <label class="info-block__label">Level</label>
+                    <span class="info-block__value" id="level">0</span>
+                </div>
+                <div class="info-block">
+                    <label class="info-block__label">Speed</label>
+                    <span class="info-block__value" id="speed">0</span>
+                </div>
+                <div class="info-block">
+                    <label class="info-block__label" id="pause"></label>
+                </div>
+                <div class="info-block">
+                    <label class="info-block__label" id="game-over"></label>
+                </div>
+            </div>
+
+            <div class="help help_hidden" id="help">
+                <header class="help__header">CONTROLS</header>
+                <div class="help__content">
+W, ARROW UP    - Move up<br>
+S, ARROW DOWN  - Move down<br>
+A, ARROW LEFT  - Move left<br>
+D, ARROW RIGHT - Move right<br>
+P, SPACE       - Pause<br>
+R, ENTER       - Restart<br>
+H, ESC         - Show this text<br>
+MOUSE          - Move if arrows<br>
+                 is enabled
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="controls__main">
+                <div class="controls__arrows">
+                    <div class="controls__arrows-line">
+                        <button class="push-button push-button_middle" id="snake-up">UP</button>
+                    </div>
+                    <div class="controls__arrows-line controls__arrows-line_wide">
+                        <button class="push-button push-button_middle" id="snake-left">LEFT</button>
+                        <button class="push-button push-button_middle" id="snake-right">RIGHT</button>
+                    </div>
+                    <div class="controls__arrows-line">
+                        <button class="push-button push-button_middle" id="snake-down">DOWN</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="controls__reset">
+                        <div class="controls__button-block">
+                            <span class="controls__label">help</span>
+                            <br>
+                            <button class="push-button push-button_small" id="snake-help"></button>
+                        </div>
+
+                        <div class="controls__button-block">
+                            <span class="controls__label">reset</span>
+                            <br>
+                            <button class="push-button push-button_small" id="snake-reset"></button>
+                        </div>
+
+                        <div class="controls__button-block">
+                            <span class="controls__label">arrows</span>
+                            <br>
+                            <button class="push-button push-button_small" id="snake-arrows-enable"></button>
+                        </div>
+                    </div>
+            
+                    <button class="push-button push-button_big" id="snake-pause">PAUSE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<script type="text/javascript" src="/snake.js"></script></body>
+</html>
