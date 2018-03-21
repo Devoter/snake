@@ -269,24 +269,25 @@ export default class Game {
         if (this._showHelp || this._pause)
             return;
 
+        const angle = this._snake.angle;
         const x = event.x;
         const y = event.y;
         const snakeHead = this._getSnakeHeadElement();
         const rect = snakeHead.getBoundingClientRect();
         const rectXRight = rect.x + rect.width;
         const rectYBottom = rect.y + rect.height;
-        const deltaXL = Math.abs(rect.x - x);
-        const deltaYT = Math.abs(rect.y - y);
-        const deltaXR = Math.abs(rectXRight - x);
-        const deltaYB = Math.abs(rectYBottom - y);
+        const deltaXL = rect.x - x;
+        const deltaYT = rect.y - y;
+        const deltaXR = x - rectXRight;
+        const deltaYB = y - rectYBottom;
 
-        if (x < rect.x && deltaXL > deltaYT) // left
+        if (x < rect.x && ((deltaXL > deltaYT && angle === 1) || (deltaXL > deltaYB && angle === 3))) // left
             this._lastKey = 37;
-        else if (y < rect.y && deltaYT > deltaXL) // top
+        else if (y < rect.y && ((deltaYT > deltaXL && angle === 0) || (deltaYT > deltaXR && angle === 2))) // top
             this._lastKey = 38;
-        else if (x > rectXRight && deltaXR > deltaYB) // right
+        else if (x > rectXRight && ((deltaXR > deltaYT && angle === 1) || (deltaXR > deltaYB && angle === 3))) // right
             this._lastKey = 39;
-        else if (y > rectYBottom && deltaYB > deltaXR) // bottom
+        else if (y > rectYBottom && ((deltaYB > deltaXL && angle === 0) || (deltaYB > deltaXR && angle === 2))) // bottom
             this._lastKey = 40;
     }
 
