@@ -37,3 +37,5 @@ Open URL `http://localhost:8080/` and enjoy.
 | `P` | `SPACE`       | Pause      |
 | `R` | `ENTER`       | Restart    |
 | `H` | `ESCAPE`      | Help       |
+
+You may use mouse to move when `arrows` mode is disabled.
