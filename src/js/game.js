@@ -18,6 +18,7 @@ export default class Game {
         this._speed = 0;
         this._speedFactor = speedFactor;
         this.highScore = Number(localStorage.getItem('highScore'));
+        this.arrowsEnable = Boolean(localStorage.getItem('snakeArrowsEnable'));
         this._score = 0;
         this._showHelp = false;
         this._baseSpeed = baseSpeed;
@@ -31,6 +32,8 @@ export default class Game {
         this.nextIteration = this.nextIteration.bind(this);
         this._onKeyUp = this._onKeyUp.bind(this);
         this._onClick = this._onClick.bind(this);
+
+        this._bindButtons();
     }
 
     get highScore() {
@@ -51,6 +54,10 @@ export default class Game {
 
     get gameOver() {
         return this._gameOver;
+    }
+
+    get arrowsEnable() {
+        return this._arrowsEnable;
     }
 
     set highScore(value) {
@@ -80,6 +87,12 @@ export default class Game {
         document.getElementById('game-over').innerHTML = value ? 'GAME<br>OVER' : '';
     }
 
+    set arrowsEnable(value) {
+        this._arrowsEnable = !!value;
+        document.getElementById('snake-arrows-enable').className = 'push-button push-button_small' + (value ? ' push-button_active' : '');
+        localStorage.setItem('snakeArrowsEnable', this._arrowsEnable);
+    }
+
     render() {
         const table = this._field.table();
 
@@ -90,9 +103,8 @@ export default class Game {
     }
 
     run(restart = false, config = null) {
-        if (restart) {
+        if (restart)
             this.reset();
-        }
         this.gameOver = false;
         this._speedIterationsCount = this._baseSpeedIterationsCount;
         this._snake = new Snake();
@@ -259,6 +271,7 @@ export default class Game {
             this._showHelp = !this._showHelp;
 
             document.getElementById('help').className = 'help' + (this._showHelp ? '' : ' help_hidden');
+            document.getElementById('snake-help').className = 'push-button push-button_small' + (this._showHelp ? ' push_button_active' : '');
             if (!this._pause)
                 this._togglePause(true);
         }
@@ -266,7 +279,7 @@ export default class Game {
     }
 
     _onClick(event) {
-        if (this._showHelp || this._pause)
+        if (this._showHelp || this._pause || this.arrowsEnable)
             return;
 
         const angle = this._snake.angle;
@@ -314,5 +327,29 @@ export default class Game {
     _getSnakeHeadElement() {
         const head = this._snake.points[this._snake.points.length - 1];
         return this._cells[head[0]][head[1]];
+    }
+
+    _bindButtons() {
+        document.getElementById('snake-arrows-enable').addEventListener('click', () => this.arrowsEnable = !this.arrowsEnable);
+        document.getElementById('snake-pause').addEventListener('click', () => this._onKeyUp({keyCode: 32}));
+        document.getElementById('snake-reset').addEventListener('click', () => this._onKeyUp({keyCode: 13}));
+        document.getElementById('snake-left').addEventListener('click', () => {
+            if (this.arrowsEnable) {
+                this._lastKey = 37;
+            }
+        });
+        document.getElementById('snake-up').addEventListener('click', () => {
+            if (this.arrowsEnable)
+                this._lastKey = 38;
+        });
+        document.getElementById('snake-right').addEventListener('click', () => {
+            if (this.arrowsEnable)
+                this._lastKey = 39;
+        });
+        document.getElementById('snake-down').addEventListener('click', () => {
+            if (this.arrowsEnable)
+                this._lastKey = 40;
+        });
+        document.getElementById('snake-help').addEventListener('click', () => this._onKeyUp({keyCode: 27}));
     }
 }

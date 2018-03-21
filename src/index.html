@@ -55,32 +55,39 @@ H, ESC         - Show this text
             <div class="controls__main">
                 <div class="controls__arrows">
                     <div class="controls__arrows-line">
-                        <button class="push-button push-button_middle">UP</button>
+                        <button class="push-button push-button_middle" id="snake-up">UP</button>
                     </div>
                     <div class="controls__arrows-line controls__arrows-line_wide">
-                        <button class="push-button push-button_middle">LEFT</button>
-                        <button class="push-button push-button_middle">RIGHT</button>
+                        <button class="push-button push-button_middle" id="snake-left">LEFT</button>
+                        <button class="push-button push-button_middle" id="snake-right">RIGHT</button>
                     </div>
                     <div class="controls__arrows-line">
-                        <button class="push-button push-button_middle">DOWN</button>
+                        <button class="push-button push-button_middle" id="snake-down">DOWN</button>
                     </div>
                 </div>
 
                 <div>
                     <div class="controls__reset">
                         <div class="controls__button-block">
+                            <span class="controls__label">help</span>
+                            <br>
+                            <button class="push-button push-button_small" id="snake-help"></button>
+                        </div>
+
+                        <div class="controls__button-block">
                             <span class="controls__label">reset</span>
                             <br>
-                            <button class="push-button push-button_small"></button>
+                            <button class="push-button push-button_small" id="snake-reset"></button>
                         </div>
+
                         <div class="controls__button-block">
                             <span class="controls__label">arrows</span>
                             <br>
-                            <button class="push-button push-button_small"></button>
+                            <button class="push-button push-button_small" id="snake-arrows-enable"></button>
                         </div>
                     </div>
             
-                    <button class="push-button push-button_big">PAUSE</button>
+                    <button class="push-button push-button_big" id="snake-pause">PAUSE</button>
                 </div>
             </div>
         </div>
