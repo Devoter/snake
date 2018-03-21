@@ -267,11 +267,11 @@ export default class Game {
                 this._togglePause();
             return;
         }
-        else if (event.keyCode === 72 || event.keyCode === 27) {
+        else if (event.keyCode === 72 || event.keyCode === 27) { // help
             this._showHelp = !this._showHelp;
 
             document.getElementById('help').className = 'help' + (this._showHelp ? '' : ' help_hidden');
-            document.getElementById('snake-help').className = 'push-button push-button_small' + (this._showHelp ? ' push_button_active' : '');
+            document.getElementById('snake-help').className = 'push-button push-button_small' + (this._showHelp ? ' push-button_active' : '');
             if (!this._pause)
                 this._togglePause(true);
         }
@@ -309,12 +309,14 @@ export default class Game {
             clearTimeout(this._iterationTimer);
             this._iterationTimer = null;
             document.getElementById('pause').innerHTML = 'PAUSE';
+            document.getElementById('snake-pause').className = 'push-button push-button_big push-button_active';
             if (!ignoreFlag)
                 this._pause = true;
         }
         else {
             this._iterationTimer = setTimeout(this.nextIteration, this._timeout());
             document.getElementById('pause').innerHTML = '';
+            document.getElementById('snake-pause').className = 'push-button push-button_big';
             if (!ignoreFlag)
                 this._pause = false;
         }
