@@ -1,0 +1,51 @@
+.controls {
+    padding-top: 3vh;
+
+    &__label {
+        color: #fff;
+        display: inline-block;
+        width: 100%;
+        text-align: center;
+        font-family: monospace;
+        font-size: 1.4vh;
+        padding-bottom: 0.4vh;
+    }
+
+    &__main {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    &__reset {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+        margin-bottom: 2vh;
+    }
+
+    &__button-block {
+        text-align: center;
+    }
+
+    &__arrows {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        width: 25vh;
+    }
+
+    &__arrows-line {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+
+        &_wide {
+            justify-content: space-between;
+        }
+    }
+} 

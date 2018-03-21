@@ -8,37 +8,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 </head>
 <body>
-    <div class="container" id="display">
-        <div class="snake" id="snake">
-        </div>
-        <div class="info">
-            <div class="info-block">
-                <label class="info-block__label">Hi-Score</label>
-                <span class="info-block__value" id="high-score">0</span>
-            </div>
-            <div class="info-block">
-                <label class="info-block__label">Score</label>
-                <span class="info-block__value" id="score">0</span>
-            </div>
-            <div class="info-block">
-                <label class="info-block__label">Level</label>
-                <span class="info-block__value" id="level">0</span>
-            </div>
-            <div class="info-block">
-                <label class="info-block__label">Speed</label>
-                <span class="info-block__value" id="speed">0</span>
-            </div>
-            <div class="info-block">
-                <label class="info-block__label" id="pause"></label>
-            </div>
-            <div class="info-block">
-                <label class="info-block__label" id="game-over"></label>
-            </div>
-        </div>
+    <div class="container" id="container">
+        <div class="display" id="display">
+            <div class="snake" id="snake"></div>
 
-        <div class="help help_hidden" id="help">
-            <header class="help__header">CONTROLS</header>
-            <div class="help__content">
+            <div class="info">
+                <div class="info-block">
+                    <label class="info-block__label">Hi-Score</label>
+                    <span class="info-block__value" id="high-score">0</span>
+                </div>
+                <div class="info-block">
+                    <label class="info-block__label">Score</label>
+                    <span class="info-block__value" id="score">0</span>
+                </div>
+                <div class="info-block">
+                    <label class="info-block__label">Level</label>
+                    <span class="info-block__value" id="level">0</span>
+                </div>
+                <div class="info-block">
+                    <label class="info-block__label">Speed</label>
+                    <span class="info-block__value" id="speed">0</span>
+                </div>
+                <div class="info-block">
+                    <label class="info-block__label" id="pause"></label>
+                </div>
+                <div class="info-block">
+                    <label class="info-block__label" id="game-over"></label>
+                </div>
+            </div>
+
+            <div class="help help_hidden" id="help">
+                <header class="help__header">CONTROLS</header>
+                <div class="help__content">
 W, ARROW UP    - Move up<br>
 S, ARROW DOWN  - Move down<br>
 A, ARROW LEFT  - Move left<br>
@@ -46,6 +47,41 @@ D, ARROW RIGHT - Move right<br>
 P, SPACE       - Pause<br>
 R, ENTER       - Restart<br>
 H, ESC         - Show this text
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="controls__main">
+                <div class="controls__arrows">
+                    <div class="controls__arrows-line">
+                        <button class="push-button push-button_middle">UP</button>
+                    </div>
+                    <div class="controls__arrows-line controls__arrows-line_wide">
+                        <button class="push-button push-button_middle">LEFT</button>
+                        <button class="push-button push-button_middle">RIGHT</button>
+                    </div>
+                    <div class="controls__arrows-line">
+                        <button class="push-button push-button_middle">DOWN</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="controls__reset">
+                        <div class="controls__button-block">
+                            <span class="controls__label">reset</span>
+                            <br>
+                            <button class="push-button push-button_small"></button>
+                        </div>
+                        <div class="controls__button-block">
+                            <span class="controls__label">arrows</span>
+                            <br>
+                            <button class="push-button push-button_small"></button>
+                        </div>
+                    </div>
+            
+                    <button class="push-button push-button_big">PAUSE</button>
+                </div>
             </div>
         </div>
     </div>

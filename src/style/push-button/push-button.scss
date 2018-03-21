@@ -1,0 +1,27 @@
+.push-button {
+    background-color: #f4d942;
+    border-radius: 100%;
+    border: 2px solid rgba(0, 0, 0, .1);
+    outline: none;
+    font-family: monospace;
+    font-size: 2vh;
+
+    &_small {
+        width: 3.5vh;
+        height: 3.5vh;
+    }
+
+    &_middle {
+        width: 8vh;
+        height: 8vh;
+    }
+
+    &_big {
+        width: 15vh;
+        height: 15vh;
+    }
+
+    &_active {
+        background-color: #e0c73c;
+    }
+} 
