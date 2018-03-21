@@ -29,6 +29,8 @@ export default class Game {
         this._pause = false;
 
         this.nextIteration = this.nextIteration.bind(this);
+        this._onKeyUp = this._onKeyUp.bind(this);
+        this._onClick = this._onClick.bind(this);
     }
 
     get highScore() {
@@ -89,14 +91,7 @@ export default class Game {
 
     run(restart = false, config = null) {
         if (restart) {
-            this._shouldGenerateFood = false;
-            this._speedIterationsCount = this._baseSpeedIterationsCount;
-            this.score = 0;
-            this.speed = 0;
-            this.level = 0;
-            this._lastKey = null;
-            this._iterationTimer = null;
-            this._pause = false;
+            this.reset();
         }
         this.gameOver = false;
         this._speedIterationsCount = this._baseSpeedIterationsCount;
@@ -119,10 +114,32 @@ export default class Game {
         this._field.addItem(rabbit);
         this.render();
         if (!restart)
-            this._bindKeys();
+            this._bindEvents();
 
         this._iterationTimer = setTimeout(this.nextIteration, this._timeout());
         this._generatorCounter = this._generatorFrequency;
+    }
+
+    stop() {
+        if (this._iterationTimer) {
+            clearTimeout(this._iterationTimer);
+            this._iterationTimer = null;
+        }
+
+        window.removeEventListener('keyup', this._onKeyUp);
+        window.removeEventListener('click', this._onClick);
+        this.reset();
+    }
+
+    reset() {
+        this._shouldGenerateFood = false;
+        this._speedIterationsCount = this._baseSpeedIterationsCount;
+        this.score = 0;
+        this.speed = 0;
+        this.level = 0;
+        this._lastKey = null;
+        this._iterationTimer = null;
+        this._pause = false;
     }
 
     nextIteration() {
@@ -214,35 +231,63 @@ export default class Game {
         document.getElementById('snake').innerHTML = '';
     }
 
-    _bindKeys() {
-        window.addEventListener('keyup', event => {
-            if (event.keyCode === 82 || event.keyCode === 13) { // restart
-                if (this._showHelp)
-                    return;
+    _bindEvents() {
+        window.addEventListener('keyup', this._onKeyUp);
+        window.addEventListener('click', this._onClick);
+    }
 
-                if (this._iterationTimer) {
-                    clearTimeout(this._iterationTimer);
-                    this._iterationTimer = null;
-                    this._lastKey = null;
-                    this._field.clear();
-                    this.run(true);
-                    return;
-                }
-            }
-            else if (event.keyCode === 80 || event.keyCode === 32) { // pause
-                if (!this._showHelp)
-                    this._togglePause();
+    _onKeyUp(event) {
+        if (event.keyCode === 82 || event.keyCode === 13) { // restart
+            if (this._showHelp)
+                return;
+
+            if (this._iterationTimer) {
+                clearTimeout(this._iterationTimer);
+                this._iterationTimer = null;
+                this._lastKey = null;
+                this._field.clear();
+                this.run(true);
                 return;
             }
-            else if (event.keyCode === 72 || event.keyCode === 27) {
-                this._showHelp = !this._showHelp;
+        }
+        else if (event.keyCode === 80 || event.keyCode === 32) { // pause
+            if (!this._showHelp)
+                this._togglePause();
+            return;
+        }
+        else if (event.keyCode === 72 || event.keyCode === 27) {
+            this._showHelp = !this._showHelp;
 
-                document.getElementById('help').className = 'help' + (this._showHelp ? '' : ' help_hidden');
-                if (!this._pause)
-                    this._togglePause(true);
-            }
-            this._lastKey = event.keyCode;
-        });
+            document.getElementById('help').className = 'help' + (this._showHelp ? '' : ' help_hidden');
+            if (!this._pause)
+                this._togglePause(true);
+        }
+        this._lastKey = event.keyCode;
+    }
+
+    _onClick(event) {
+        if (this._showHelp || this._pause)
+            return;
+
+        const x = event.x;
+        const y = event.y;
+        const snakeHead = this._getSnakeHeadElement();
+        const rect = snakeHead.getBoundingClientRect();
+        const rectXRight = rect.x + rect.width;
+        const rectYBottom = rect.y + rect.height;
+        const deltaXL = Math.abs(rect.x - x);
+        const deltaYT = Math.abs(rect.y - y);
+        const deltaXR = Math.abs(rectXRight - x);
+        const deltaYB = Math.abs(rectYBottom - y);
+
+        if (x < rect.x && deltaXL > deltaYT) // left
+            this._lastKey = 37;
+        else if (y < rect.y && deltaYT > deltaXL) // top
+            this._lastKey = 38;
+        else if (x > rectXRight && deltaXR > deltaYB) // right
+            this._lastKey = 39;
+        else if (y > rectYBottom && deltaYB > deltaXR) // bottom
+            this._lastKey = 40;
     }
 
     _togglePause(ignoreFlag = false) {
@@ -263,5 +308,10 @@ export default class Game {
 
     _timeout() {
         return this._baseSpeed - this._speed * this._speedFactor;
+    }
+
+    _getSnakeHeadElement() {
+        const head = this._snake.points[this._snake.points.length - 1];
+        return this._cells[head[0]][head[1]];
     }
 }
