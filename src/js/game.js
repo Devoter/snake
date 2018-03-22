@@ -34,13 +34,14 @@ export default class Game {
         this._snake = null;
         this._input = [];
         this._iterationTimer = null;
-        this._level = 0;
+        this._level = -1;
         this._speed = 0;
         this._speedFactor = speedFactor;
         this.highScore = Number(localStorage.getItem('snakeHighScore'));
         let arrowsEnable = localStorage.getItem('snakeArrowsEnable');
         this.arrowsEnable = arrowsEnable === undefined ? true : !!arrowsEnable;
         this._score = 0;
+        this._levelScore = 0;
         this._showHelp = false;
         this._baseSpeed = baseSpeed;
         this._baseSpeedIterationsCount = speedIterationsCount;
@@ -131,9 +132,8 @@ export default class Game {
         }
     }
 
-    run(restart = false, config = null) {
-        if (restart)
-            this.reset();
+    run(restart = false, levelUp = false) {
+        this.reset(levelUp);
         this.gameOver = false;
         this._speedIterationsCount = this._baseSpeedIterationsCount;
         this._snake = new Snake();
@@ -142,14 +142,9 @@ export default class Game {
         let end = [start[0], start[1] - 1];
 
         this._snake.init(start, end);
-        if (config !== null) {
-            config.forEach(item => {
-                let wall = new Wall();
-                wall.start = item.start;
-                wall.end = item.end;
-                this._field.addItem(wall);
-            });
-        }
+        this._levelScore = 0;
+        if (levelUp)
+            this._levelUp();
         this._field.addItem(this._snake);
         let rabbit = new Rabbit(this._foodLifeTime);
         this._field.addItem(rabbit);
@@ -171,12 +166,15 @@ export default class Game {
         this.reset();
     }
 
-    reset() {
+    reset(levelUp = false) {
+        this._field.clear();
         this._shouldGenerateFood = false;
         this._speedIterationsCount = this._baseSpeedIterationsCount;
-        this.score = 0;
-        this.speed = 0;
-        this.level = 0;
+        if (!levelUp) {
+            this.score = 0;
+            this.speed = 0;
+            this.level = 0;
+        }
         this._input = [];
         this._iterationTimer = null;
         this._pause = false;
@@ -237,9 +235,13 @@ export default class Game {
             let itemsToRemove = food.filter(item => item.eaten);
 
             itemsToRemove.forEach(item => {
-                this.score += Math.max(1, item.lifeTime * this._foodFactor);
+                this._incrementLevelScore(Math.max(1, item.lifeTime * this._foodFactor));
                 this._field.removeItem(item);
             });
+            if (this._levelScore >= this._levels[this.level % this._levels.length].score) {
+                this.run(false, true);
+                return;
+            }
             this._snake.grow();
             this._shouldGenerateFood = true;
         }
@@ -280,6 +282,28 @@ export default class Game {
         this._elements.snakeGame.innerHTML = '';
     }
 
+    _incrementLevelScore(value) {
+        this._levelScore += value;
+        this.score += value;
+    }
+
+    _levelUp() {
+        ++this.level;
+        const level = this._levels[this.level % this._levels.length];
+        this.speed = level.speed + Math.floor(this.level / this._levels.length);
+
+        for (let i = 0; i < level.items.length; ++i) {
+            const item = level.items[i];
+
+            if (item.type === 'wall') {
+                let wall = new Wall();
+                wall.start = item.start;
+                wall.end = item.end;
+                this._field.addItem(wall);
+            }
+        }
+    }
+
     _bindEvents() {
         window.addEventListener('keyup', this._onKeyUp);
         window.addEventListener('click', this._onClick);
@@ -293,7 +317,6 @@ export default class Game {
             if (this._iterationTimer) {
                 clearTimeout(this._iterationTimer);
                 this._iterationTimer = null;
-                this._field.clear();
                 this.run(true);
                 return;
             }
