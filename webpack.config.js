@@ -97,6 +97,10 @@ let config = {
             {
                 from: './img',
                 to: 'img'
+            },
+            {
+                from: './offline.manifest',
+                to: 'offline.manifest'
             }
         ])
     ],
