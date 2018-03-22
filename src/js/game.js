@@ -137,7 +137,6 @@ export default class Game {
             this._bindEvents();
 
         this._iterationTimer = setTimeout(this.nextIteration, this._timeout());
-        this._generatorCounter = this._generatorFrequency;
     }
 
     stop() {
