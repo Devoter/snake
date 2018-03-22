@@ -138,13 +138,18 @@ export default class Game {
         this._speedIterationsCount = this._baseSpeedIterationsCount;
         this._snake = new Snake();
 
-        let start = [Math.ceil(this._field.sizeX / 2), Math.ceil(this._field.sizeY / 2)];
-        let end = [start[0], start[1] - 1];
+        this._levelScore = 0;
+        let start, end;
+
+        if (levelUp)
+            [start, end] = this._levelUp();
+
+        if (!start || !end) {
+            start = [Math.ceil(this._field.sizeX / 2), Math.ceil(this._field.sizeY / 2)];
+            end = [start[0], start[1] - 1];
+        }
 
         this._snake.init(start, end);
-        this._levelScore = 0;
-        if (levelUp)
-            this._levelUp();
         this._field.addItem(this._snake);
         let rabbit = new Rabbit(this._foodLifeTime);
         this._field.addItem(rabbit);
@@ -302,6 +307,8 @@ export default class Game {
                 this._field.addItem(wall);
             }
         }
+
+        return [level.snakeStart, level.snakeEnd];
     }
 
     _bindEvents() {
