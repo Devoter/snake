@@ -12,7 +12,7 @@ export default class Game {
 
         this._createFieldLayout(sizeX, sizeY);
         this._snake = null;
-        this._lastKey = null;
+        this._input = [];
         this._iterationTimer = null;
         this._level = 0;
         this._speed = 0;
@@ -32,6 +32,7 @@ export default class Game {
         this.nextIteration = this.nextIteration.bind(this);
         this._onKeyUp = this._onKeyUp.bind(this);
         this._onClick = this._onClick.bind(this);
+        this._availableKeys = [37, 38, 39, 40, 65, 87, 68, 83];
 
         this._bindButtons();
     }
@@ -149,7 +150,7 @@ export default class Game {
         this.score = 0;
         this.speed = 0;
         this.level = 0;
-        this._lastKey = null;
+        this._input = [];
         this._iterationTimer = null;
         this._pause = false;
     }
@@ -170,7 +171,9 @@ export default class Game {
                 --item.lifeTime;
         });
 
-        switch(this._lastKey) {
+        let lastKey = this._input.shift();
+
+        switch(lastKey) {
             case 87: // W
             case 38: // UP
                 moved = this._snake.moveUp(this._field);
@@ -191,7 +194,6 @@ export default class Game {
                 keyPressed = false;
                 break;
         }
-        this._lastKey = null;
 
         if (!keyPressed)
             moved = this._snake.moveNext(this._field);
@@ -256,7 +258,6 @@ export default class Game {
             if (this._iterationTimer) {
                 clearTimeout(this._iterationTimer);
                 this._iterationTimer = null;
-                this._lastKey = null;
                 this._field.clear();
                 this.run(true);
                 return;
@@ -275,7 +276,8 @@ export default class Game {
             if (!this._pause)
                 this._togglePause(true);
         }
-        this._lastKey = event.keyCode;
+        if (this._availableKeys.includes(event.keyCode))
+            this._input.push(event.keyCode);
     }
 
     _onClick(event) {
@@ -295,13 +297,13 @@ export default class Game {
         const deltaYB = y - rectYBottom;
 
         if (x < rect.x && ((deltaXL > deltaYT && angle === 1) || (deltaXL > deltaYB && angle === 3))) // left
-            this._lastKey = 37;
+            this._input.push(37);
         else if (y < rect.y && ((deltaYT > deltaXL && angle === 0) || (deltaYT > deltaXR && angle === 2))) // top
-            this._lastKey = 38;
+            this._input.push(38);
         else if (x > rectXRight && ((deltaXR > deltaYT && angle === 1) || (deltaXR > deltaYB && angle === 3))) // right
-            this._lastKey = 39;
+            this._input.push(39);
         else if (y > rectYBottom && ((deltaYB > deltaXL && angle === 0) || (deltaYB > deltaXR && angle === 2))) // bottom
-            this._lastKey = 40;
+            this._input.push(40);
     }
 
     _togglePause(ignoreFlag = false) {
@@ -337,20 +339,20 @@ export default class Game {
         document.getElementById('snake-reset').addEventListener('click', () => this._onKeyUp({keyCode: 13}));
         document.getElementById('snake-left').addEventListener('click', () => {
             if (this.arrowsEnable) {
-                this._lastKey = 37;
+                this._input.push(37);
             }
         });
         document.getElementById('snake-up').addEventListener('click', () => {
             if (this.arrowsEnable)
-                this._lastKey = 38;
+                this._input.push(38);
         });
         document.getElementById('snake-right').addEventListener('click', () => {
             if (this.arrowsEnable)
-                this._lastKey = 39;
+                this._input.push(39);
         });
         document.getElementById('snake-down').addEventListener('click', () => {
             if (this.arrowsEnable)
-                this._lastKey = 40;
+                this._input.push(40);
         });
         document.getElementById('snake-help').addEventListener('click', () => this._onKeyUp({keyCode: 27}));
     }
