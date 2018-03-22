@@ -1,6 +1,6 @@
 # Retro Snake
 
-Simple web-based Retro Snake game.
+Simple web-based Retro Snake game. [Demo](https://devoter.github.io/snake/).
 
 ## Prerequisites
 
