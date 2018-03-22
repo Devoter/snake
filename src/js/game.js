@@ -96,6 +96,11 @@ export default class Game {
         localStorage.setItem('snakeArrowsEnable', this._arrowsEnable);
     }
 
+    destroy() {
+        this.stop();
+        this._clearFieldLayout();
+    }
+
     render() {
         const table = this._field.table();
 
@@ -230,8 +235,11 @@ export default class Game {
     }
 
     addInput(keyCode) {
-        if (this._availableKeys.includes(keyCode) && this._input.length < this._inputQueueLimit)
-            this._input.push(keyCode);
+        const input = this._input;
+        const len = input.length;
+
+        if (this._availableKeys.includes(keyCode) && len < this._inputQueueLimit && (!len || input[len - 1] !== keyCode))
+            input.push(keyCode);
     }
 
     _createFieldLayout(sizeX, sizeY) {
