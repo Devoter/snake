@@ -4,12 +4,31 @@ import Snake from './snake';
 import Field from './field';
 
 export default class Game {
-    constructor(sizeX = 10, sizeY = 20, baseSpeed = 400, speedFactor = 10, speedIterationsCount = 25, foodLifeTime = 25, foodFactor = 5,
+    constructor(sizeX = 10, sizeY = 20, baseSpeed = 400, speedFactor = 10, speedIterationsCount = 25, foodLifeTime = 25, foodFactor = 1,
         inputQueueLimit = 4) {
         this._field = new Field(sizeX, sizeY);
         this._cells = new Array(sizeX);
         for (let x = 0; x < sizeX; ++x)
             this._cells[x] = new Array(sizeY);
+
+        this._elements = {
+            highScore: document.getElementById('high-score'),
+            score:  document.getElementById('score'),
+            level: document.getElementById('level'),
+            speed: document.getElementById('speed'),
+            gameOver: document.getElementById('game-over'),
+            snakeGame: document.getElementById('snake'),
+            help: document.getElementById('help'),
+            pause: document.getElementById('pause'),
+            arrowsEnableButton: document.getElementById('snake-arrows-enable'),
+            helpButton: document.getElementById('snake-help'),
+            pauseButton: document.getElementById('snake-pause'),
+            resetButton: document.getElementById('snake-reset'),
+            leftButton: document.getElementById('snake-left'),
+            upButton: document.getElementById('snake-up'),
+            rightButton: document.getElementById('snake-right'),
+            downButton: document.getElementById('snake-down')
+        };
 
         this._createFieldLayout(sizeX, sizeY);
         this._snake = null;
@@ -18,8 +37,9 @@ export default class Game {
         this._level = 0;
         this._speed = 0;
         this._speedFactor = speedFactor;
-        this.highScore = Number(localStorage.getItem('highScore'));
-        this.arrowsEnable = Boolean(localStorage.getItem('snakeArrowsEnable'));
+        this.highScore = Number(localStorage.getItem('snakeHighScore'));
+        let arrowsEnable = localStorage.getItem('snakeArrowsEnable');
+        this.arrowsEnable = arrowsEnable === undefined ? true : !!arrowsEnable;
         this._score = 0;
         this._showHelp = false;
         this._baseSpeed = baseSpeed;
@@ -65,34 +85,34 @@ export default class Game {
 
     set highScore(value) {
         this._highScore = value;
-        document.getElementById('high-score').innerHTML = value;
+        this._elements.highScore.innerHTML = value;
     }
 
     set score(value) {
         this._score = value;
         if (this.highScore < value)
             this.highScore = value;
-        document.getElementById('score').innerHTML = value;
+        this._elements.score.innerHTML = value;
     }
 
     set level(value) {
         this._level = value;
-        document.getElementById('level').innerHTML = value;
+        this._elements.level.innerHTML = value;
     }
 
     set speed(value) {
         this._speed = value;
-        document.getElementById('speed').innerHTML = value;
+        this._elements.speed.innerHTML = value;
     }
 
     set gameOver(value) {
         this._gameOver = !!value;
-        document.getElementById('game-over').innerHTML = value ? 'GAME<br>OVER' : '';
+        this._elements.gameOver.innerHTML = value ? 'GAME<br>OVER' : '';
     }
 
     set arrowsEnable(value) {
         this._arrowsEnable = !!value;
-        document.getElementById('snake-arrows-enable').className = 'push-button push-button_small' + (value ? ' push-button_active' : '');
+        this._elements.arrowsEnableButton.className = 'push-button push-button_small' + (value ? ' push-button_active' : '');
         localStorage.setItem('snakeArrowsEnable', this._arrowsEnable);
     }
 
@@ -206,9 +226,9 @@ export default class Game {
 
         if (!moved) {
             this.gameOver = true;
-            let highScore = Number(localStorage.getItem('highScore'));
+            let highScore = Number(localStorage.getItem('snakeHighScore'));
             this.highScore = Math.max(highScore, this.highScore);
-            localStorage.setItem('highScore', this.highScore);
+            localStorage.setItem('snakeHighScore', this.highScore);
             return;
         }
 
@@ -242,7 +262,7 @@ export default class Game {
     }
 
     _createFieldLayout(sizeX, sizeY) {
-        const container = document.getElementById('snake');
+        const container = this._elements.snakeGame;
 
         for (let y = 0; y < sizeY; ++y) {
             for (let x = 0; x < sizeX; ++x) {
@@ -256,7 +276,7 @@ export default class Game {
     }
 
     _clearFieldLayout() {
-        document.getElementById('snake').innerHTML = '';
+        this._elements.snakeGame.innerHTML = '';
     }
 
     _bindEvents() {
@@ -285,8 +305,8 @@ export default class Game {
         else if (event.keyCode === 72 || event.keyCode === 27) { // help
             this._showHelp = !this._showHelp;
 
-            document.getElementById('help').className = 'help' + (this._showHelp ? '' : ' help_hidden');
-            document.getElementById('snake-help').className = 'push-button push-button_small' + (this._showHelp ? ' push-button_active' : '');
+            this._elements.help.className = 'help' + (this._showHelp ? '' : ' help_hidden');
+            this._elements.helpButton.className = 'push-button push-button_small' + (this._showHelp ? ' push-button_active' : '');
             if (!this._pause)
                 this._togglePause(true);
         }
@@ -326,15 +346,15 @@ export default class Game {
         if (this._iterationTimer) {
             clearTimeout(this._iterationTimer);
             this._iterationTimer = null;
-            document.getElementById('pause').innerHTML = 'PAUSE';
-            document.getElementById('snake-pause').className = 'push-button push-button_big push-button_active';
+            this._elements.pause.innerHTML = 'PAUSE';
+            this._elements.pauseButton.className = 'push-button push-button_big push-button_active';
             if (!ignoreFlag)
                 this._pause = true;
         }
         else {
             this._iterationTimer = setTimeout(this.nextIteration, this._timeout());
-            document.getElementById('pause').innerHTML = '';
-            document.getElementById('snake-pause').className = 'push-button push-button_big';
+            this._elements.pause.innerHTML = '';
+            this._elements.pauseButton.className = 'push-button push-button_big';
             if (!ignoreFlag)
                 this._pause = false;
         }
@@ -350,26 +370,25 @@ export default class Game {
     }
 
     _bindButtons() {
-        document.getElementById('snake-arrows-enable').addEventListener('click', () => this.arrowsEnable = !this.arrowsEnable);
-        document.getElementById('snake-pause').addEventListener('click', () => this._onKeyUp({keyCode: 32}));
-        document.getElementById('snake-reset').addEventListener('click', () => this._onKeyUp({keyCode: 13}));
-        document.getElementById('snake-left').addEventListener('click', () => {
-            if (this.arrowsEnable) {
+        this._elements.arrowsEnableButton.addEventListener('click', () => this.arrowsEnable = !this.arrowsEnable);
+        this._elements.pauseButton.addEventListener('click', () => this._onKeyUp({keyCode: 32}));
+        this._elements.resetButton.addEventListener('click', () => this._onKeyUp({keyCode: 13}));
+        this._elements.leftButton.addEventListener('click', () => {
+            if (this.arrowsEnable)
                 this.addInput(37);
-            }
         });
-        document.getElementById('snake-up').addEventListener('click', () => {
+        this._elements.upButton.addEventListener('click', () => {
             if (this.arrowsEnable)
                 this.addInput(38);
         });
-        document.getElementById('snake-right').addEventListener('click', () => {
+        this._elements.rightButton.addEventListener('click', () => {
             if (this.arrowsEnable)
                 this.addInput(39);
         });
-        document.getElementById('snake-down').addEventListener('click', () => {
+        this._elements.downButton.addEventListener('click', () => {
             if (this.arrowsEnable)
                 this.addInput(40);
         });
-        document.getElementById('snake-help').addEventListener('click', () => this._onKeyUp({keyCode: 27}));
+        this._elements.helpButton.addEventListener('click', () => this._onKeyUp({keyCode: 27}));
     }
 }
