@@ -141,7 +141,7 @@ export default class Game {
         this._levelScore = 0;
         let start, end;
 
-        if (levelUp)
+        if (levelUp || restart)
             [start, end] = this._levelUp();
 
         if (!start || !end) {
@@ -178,7 +178,7 @@ export default class Game {
         if (!levelUp) {
             this.score = 0;
             this.speed = 0;
-            this.level = 0;
+            this.level = -1;
         }
         this._input = [];
         this._iterationTimer = null;
