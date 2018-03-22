@@ -110,12 +110,14 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_app_scss__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__style_app_scss___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__style_app_scss__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__game__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__levels__ = __webpack_require__(9);
+
 
 
 
 document.addEventListener('DOMContentLoaded', function () {
-    let game = new __WEBPACK_IMPORTED_MODULE_1__game__["a" /* default */]();
-    game.run();
+    let game = new __WEBPACK_IMPORTED_MODULE_1__game__["a" /* default */](__WEBPACK_IMPORTED_MODULE_2__levels__["a" /* default */]);
+    game.run(false, true);
 });
 
 
@@ -140,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 class Game {
-    constructor(sizeX = 10, sizeY = 20, baseSpeed = 400, speedFactor = 10, speedIterationsCount = 25, foodLifeTime = 25, foodFactor = 1,
+    constructor(levels = null, sizeX = 10, sizeY = 20, baseSpeed = 400, speedFactor = 10, speedIterationsCount = 25, foodLifeTime = 25, foodFactor = 1,
         inputQueueLimit = 4) {
         this._field = new __WEBPACK_IMPORTED_MODULE_3__field__["a" /* default */](sizeX, sizeY);
         this._cells = new Array(sizeX);
@@ -170,13 +172,14 @@ class Game {
         this._snake = null;
         this._input = [];
         this._iterationTimer = null;
-        this._level = 0;
+        this._level = -1;
         this._speed = 0;
         this._speedFactor = speedFactor;
         this.highScore = Number(localStorage.getItem('snakeHighScore'));
         let arrowsEnable = localStorage.getItem('snakeArrowsEnable');
         this.arrowsEnable = arrowsEnable === undefined ? true : !!arrowsEnable;
         this._score = 0;
+        this._levelScore = 0;
         this._showHelp = false;
         this._baseSpeed = baseSpeed;
         this._baseSpeedIterationsCount = speedIterationsCount;
@@ -186,6 +189,7 @@ class Game {
         this._foodFactor = foodFactor;
         this._pause = false;
         this._inputQueueLimit = inputQueueLimit;
+        this._levels = levels;
 
         this.nextIteration = this.nextIteration.bind(this);
         this._onKeyUp = this._onKeyUp.bind(this);
@@ -266,25 +270,24 @@ class Game {
         }
     }
 
-    run(restart = false, config = null) {
-        if (restart)
-            this.reset();
+    run(restart = false, levelUp = false) {
+        this.reset(levelUp);
         this.gameOver = false;
         this._speedIterationsCount = this._baseSpeedIterationsCount;
         this._snake = new __WEBPACK_IMPORTED_MODULE_2__snake__["a" /* default */]();
 
-        let start = [Math.ceil(this._field.sizeX / 2), Math.ceil(this._field.sizeY / 2)];
-        let end = [start[0], start[1] - 1];
+        this._levelScore = 0;
+        let start, end;
+
+        if (levelUp || restart)
+            [start, end] = this._levelUp();
+
+        if (!start || !end) {
+            start = [Math.ceil(this._field.sizeX / 2), Math.ceil(this._field.sizeY / 2)];
+            end = [start[0], start[1] - 1];
+        }
 
         this._snake.init(start, end);
-        if (config !== null) {
-            config.forEach(item => {
-                let wall = new __WEBPACK_IMPORTED_MODULE_1__wall__["a" /* default */]();
-                wall.start = item.start;
-                wall.end = item.end;
-                this._field.addItem(wall);
-            });
-        }
         this._field.addItem(this._snake);
         let rabbit = new __WEBPACK_IMPORTED_MODULE_0__rabbit__["a" /* default */](this._foodLifeTime);
         this._field.addItem(rabbit);
@@ -306,12 +309,15 @@ class Game {
         this.reset();
     }
 
-    reset() {
+    reset(levelUp = false) {
+        this._field.clear();
         this._shouldGenerateFood = false;
         this._speedIterationsCount = this._baseSpeedIterationsCount;
-        this.score = 0;
-        this.speed = 0;
-        this.level = 0;
+        if (!levelUp) {
+            this.score = 0;
+            this.speed = 0;
+            this.level = -1;
+        }
         this._input = [];
         this._iterationTimer = null;
         this._pause = false;
@@ -372,9 +378,13 @@ class Game {
             let itemsToRemove = food.filter(item => item.eaten);
 
             itemsToRemove.forEach(item => {
-                this.score += Math.max(1, item.lifeTime * this._foodFactor);
+                this._incrementLevelScore(Math.max(1, item.lifeTime * this._foodFactor));
                 this._field.removeItem(item);
             });
+            if (this._levelScore >= this._levels[this.level % this._levels.length].score) {
+                this.run(false, true);
+                return;
+            }
             this._snake.grow();
             this._shouldGenerateFood = true;
         }
@@ -415,6 +425,30 @@ class Game {
         this._elements.snakeGame.innerHTML = '';
     }
 
+    _incrementLevelScore(value) {
+        this._levelScore += value;
+        this.score += value;
+    }
+
+    _levelUp() {
+        ++this.level;
+        const level = this._levels[this.level % this._levels.length];
+        this.speed = level.speed + Math.floor(this.level / this._levels.length);
+
+        for (let i = 0; i < level.items.length; ++i) {
+            const item = level.items[i];
+
+            if (item.type === 'wall') {
+                let wall = new __WEBPACK_IMPORTED_MODULE_1__wall__["a" /* default */]();
+                wall.start = item.start;
+                wall.end = item.end;
+                this._field.addItem(wall);
+            }
+        }
+
+        return [level.snakeStart, level.snakeEnd];
+    }
+
     _bindEvents() {
         window.addEventListener('keyup', this._onKeyUp);
         window.addEventListener('click', this._onClick);
@@ -428,7 +462,6 @@ class Game {
             if (this._iterationTimer) {
                 clearTimeout(this._iterationTimer);
                 this._iterationTimer = null;
-                this._field.clear();
                 this.run(true);
                 return;
             }
@@ -994,6 +1027,197 @@ class Field {
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Field;
 
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+const levels = [
+    {
+        speed: 0,
+        score: 50,
+        items: []
+    },
+    {
+        speed: 1,
+        score: 300,
+        items: []
+    },
+    {
+        speed: 2,
+        score: 500,
+        items: []
+    },
+    {
+        speed: 0,
+        score: 500,
+        items: [
+            {
+                type: 'wall',
+                start: [1, 1],
+                end: [2, 2]
+            },
+            {
+                type: 'wall',
+                start: [7, 1],
+                end: [8, 2]
+            }
+        ]
+    },
+    {
+        speed: 0,
+        score: 1000,
+        items: [
+            {
+                type: 'wall',
+                start: [1, 1],
+                end: [2, 2]
+            },
+            {
+                type: 'wall',
+                start: [7, 1],
+                end: [8, 2]
+            },
+            {
+                type: 'wall',
+                start: [1, 17],
+                end: [2, 18]
+            },
+            {
+                type: 'wall',
+                start: [7, 17],
+                end: [8, 18]
+            }
+        ]
+    },
+    {
+        speed: 0,
+        score: 500,
+        items: [
+            {
+                type: 'wall',
+                start: [1, 1],
+                end: [1, 4]
+            },
+            {
+                type: 'wall',
+                start: [2, 1],
+                end: [4, 1]
+            },
+            {
+                type: 'wall',
+                start: [3, 3],
+                end: [4, 4]
+            },
+            {
+                type: 'wall',
+                start: [4, 18],
+                end: [7, 18]
+            },
+            {
+                type: 'wall',
+                start: [8, 15],
+                end: [8, 18]
+            },
+            {
+                type: 'wall',
+                start: [5, 15],
+                end: [6, 16]
+            }
+        ]
+    },
+    {
+        speed: 0,
+        score: 500,
+        items: [
+            {
+                type: 'wall',
+                start: [1, 1],
+                end: [1, 10]
+            },
+            {
+                type: 'wall',
+                start: [2, 1],
+                end: [4, 1]
+            },
+            {
+                type: 'wall',
+                start: [3, 3],
+                end: [4, 6]
+            },
+            {
+                type: 'wall',
+                start: [2, 18],
+                end: [7, 17]
+            },
+            {
+                type: 'wall',
+                start: [8, 12],
+                end: [8, 18]
+            },
+            {
+                type: 'wall',
+                start: [9, 0],
+                end: [9, 2]
+            }
+        ]
+     },
+    {
+        speed: 0,
+        score: 256,
+        items: [
+            {
+                type: 'wall',
+                start: [0, 3],
+                end: [1, 3]
+            },
+            {
+                type: 'wall',
+                start: [0, 14],
+                end: [5, 14]
+            },
+            {
+                type: 'wall',
+                start: [2, 6],
+                end: [2, 11]
+            },
+            {
+                type: 'wall',
+                start: [3, 6],
+                end: [4, 6]
+            },
+            {
+                type: 'wall',
+                start: [3, 11],
+                end: [6, 11]
+            },
+            {
+                type: 'wall',
+                start: [4, 3],
+                end: [6, 3]
+            },
+            {
+                type: 'wall',
+                start: [7, 3],
+                end: [7, 11]
+            },
+            {
+                type: 'wall',
+                start: [4, 17],
+                end: [7, 19]
+            },
+            {
+                type: 'wall',
+                start: [8, 14],
+                end: [9, 14]
+            }
+        ]
+    }
+];
+
+/* harmony default export */ __webpack_exports__["a"] = (levels);
 
 
 /***/ })
