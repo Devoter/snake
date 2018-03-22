@@ -230,7 +230,7 @@ export default class Game {
     }
 
     addInput(keyCode) {
-        if (this._availableKeys.includes(event.keyCode) && this._input.length < this._inputQueueLimit)
+        if (this._availableKeys.includes(keyCode) && this._input.length < this._inputQueueLimit)
             this._input.push(keyCode);
     }
 
