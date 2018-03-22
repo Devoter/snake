@@ -4,7 +4,7 @@ import Snake from './snake';
 import Field from './field';
 
 export default class Game {
-    constructor(sizeX = 10, sizeY = 20, baseSpeed = 400, speedFactor = 10, speedIterationsCount = 25, foodLifeTime = 20, foodFactor = 5,
+    constructor(sizeX = 10, sizeY = 20, baseSpeed = 400, speedFactor = 10, speedIterationsCount = 25, foodLifeTime = 25, foodFactor = 5,
         inputQueueLimit = 4) {
         this._field = new Field(sizeX, sizeY);
         this._cells = new Array(sizeX);
@@ -266,7 +266,7 @@ export default class Game {
 
     _onKeyUp(event) {
         if (event.keyCode === 82 || event.keyCode === 13) { // restart
-            if (this._showHelp)
+            if (this._showHelp || this._pause)
                 return;
 
             if (this._iterationTimer) {
@@ -320,6 +320,9 @@ export default class Game {
     }
 
     _togglePause(ignoreFlag = false) {
+        if (this.gameOver)
+            return;
+
         if (this._iterationTimer) {
             clearTimeout(this._iterationTimer);
             this._iterationTimer = null;

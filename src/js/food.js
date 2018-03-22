@@ -1,7 +1,7 @@
 import GameItem from './game-item';
 
 export default class Food extends GameItem {
-    constructor(lifeTime = 20) {
+    constructor(lifeTime = 25) {
         super();
         this._lifeTime = lifeTime;
         this._eaten = false;
