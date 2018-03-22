@@ -124,12 +124,21 @@ export default class Game {
     }
 
     render() {
+        // let time = performance.now();
+
         const table = this._field.table();
 
-        for (let x = 0; x < this._cells.length; ++x) {
-            for (let y = 0; y < this._cells[x].length; ++y)
-                this._cells[x][y].className = 'snake-cell' + (table[x][y] ? ' snake-cell_active' : '');
+        // time = performance.now() - time;
+        // console.log('table()', time);
+
+        // time = performance.now();
+
+        for (let i = 0; i < table.length; ++i) {
+            this._cells[table[i].x][table[i].y].className = 'snake-cell' + (table[i].value ? ' snake-cell_active' : '');
         }
+
+        // time = performance.now() - time;
+        // console.log('render()', time);
     }
 
     run(restart = false, levelUp = false) {
