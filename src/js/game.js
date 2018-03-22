@@ -4,7 +4,8 @@ import Snake from './snake';
 import Field from './field';
 
 export default class Game {
-    constructor(sizeX = 10, sizeY = 20, baseSpeed = 400, speedFactor = 10, speedIterationsCount = 25, foodLifeTime = 20, foodFactor = 5) {
+    constructor(sizeX = 10, sizeY = 20, baseSpeed = 400, speedFactor = 10, speedIterationsCount = 25, foodLifeTime = 20, foodFactor = 5,
+        inputQueueLimit = 4) {
         this._field = new Field(sizeX, sizeY);
         this._cells = new Array(sizeX);
         for (let x = 0; x < sizeX; ++x)
@@ -28,6 +29,7 @@ export default class Game {
         this._foodLifeTime = foodLifeTime;
         this._foodFactor = foodFactor;
         this._pause = false;
+        this._inputQueueLimit = inputQueueLimit;
 
         this.nextIteration = this.nextIteration.bind(this);
         this._onKeyUp = this._onKeyUp.bind(this);
@@ -227,6 +229,11 @@ export default class Game {
         this._iterationTimer = setTimeout(this.nextIteration, this._timeout());
     }
 
+    addInput(keyCode) {
+        if (this._availableKeys.includes(event.keyCode) && this._input.length < this._inputQueueLimit)
+            this._input.push(keyCode);
+    }
+
     _createFieldLayout(sizeX, sizeY) {
         const container = document.getElementById('snake');
 
@@ -276,8 +283,7 @@ export default class Game {
             if (!this._pause)
                 this._togglePause(true);
         }
-        if (this._availableKeys.includes(event.keyCode))
-            this._input.push(event.keyCode);
+        this.addInput(event.keyCode);
     }
 
     _onClick(event) {
@@ -297,13 +303,13 @@ export default class Game {
         const deltaYB = y - rectYBottom;
 
         if (x < rect.x && ((deltaXL > deltaYT && angle === 1) || (deltaXL > deltaYB && angle === 3))) // left
-            this._input.push(37);
+            this.addInput(37);
         else if (y < rect.y && ((deltaYT > deltaXL && angle === 0) || (deltaYT > deltaXR && angle === 2))) // top
-            this._input.push(38);
+            this.addInput(38);
         else if (x > rectXRight && ((deltaXR > deltaYT && angle === 1) || (deltaXR > deltaYB && angle === 3))) // right
-            this._input.push(39);
+            this.addInput(39);
         else if (y > rectYBottom && ((deltaYB > deltaXL && angle === 0) || (deltaYB > deltaXR && angle === 2))) // bottom
-            this._input.push(40);
+            this.addInput(40);
     }
 
     _togglePause(ignoreFlag = false) {
@@ -339,20 +345,20 @@ export default class Game {
         document.getElementById('snake-reset').addEventListener('click', () => this._onKeyUp({keyCode: 13}));
         document.getElementById('snake-left').addEventListener('click', () => {
             if (this.arrowsEnable) {
-                this._input.push(37);
+                this.addInput(37);
             }
         });
         document.getElementById('snake-up').addEventListener('click', () => {
             if (this.arrowsEnable)
-                this._input.push(38);
+                this.addInput(38);
         });
         document.getElementById('snake-right').addEventListener('click', () => {
             if (this.arrowsEnable)
-                this._input.push(39);
+                this.addInput(39);
         });
         document.getElementById('snake-down').addEventListener('click', () => {
             if (this.arrowsEnable)
-                this._input.push(40);
+                this.addInput(40);
         });
         document.getElementById('snake-help').addEventListener('click', () => this._onKeyUp({keyCode: 27}));
     }

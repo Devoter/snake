@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack-dev-server --env development",
+    "start": "webpack-dev-server --env development --host 0.0.0.0",
     "dev": "webpack --env development",
     "build": "NODE_ENV=production webpack --env production",
     "watch": "webpack --watch"
