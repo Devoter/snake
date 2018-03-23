@@ -15,10 +15,10 @@ export default class Field {
     }
 
     table() {
-        let tableDiff = [], t = [];
-
-        for (let x = 0; x < this._sizeX; ++x)
-            t.push(new Array(this._sizeY).fill(false));
+        let tableDiff = [];
+        let t = new Array(this._maxCount).fill(false);
+        const sizeX = this._sizeX;
+        const sizeY = this._sizeY;
 
         if (this._previousTable) {
             for (let i = 0; i < this._items.length; ++i) {
@@ -26,14 +26,16 @@ export default class Field {
                 let points = item.points;
                 for (let j = 0; j < points.length; ++j) {
                     let point = points[j];
-                    t[point[0]][point[1]] = !(item.isFood && item.lifeTime < 6 && item.lifeTime % 2 !== 0);
+                    let index = sizeX * point[1] + point[0];
+                    t[index] = !(item.isFood && item.lifeTime < 6 && item.lifeTime % 2 !== 0);
                 }
             }
-            for (let i = 0; i < t.length; ++i) {
-                for (let j = 0; j < t[i].length; ++j) {
-                    let value = t[i][j];
-                    if (this._previousTable[i][j] !== value)
-                        tableDiff.push({ x: i, y: j, value: value });
+            for (let x = 0; x < sizeX; ++x) {
+                for (let y = 0; y < sizeY; ++y) {
+                    let i = sizeX * y + x;
+                    let value = t[i];
+                    if (this._previousTable[i] !== value)
+                        tableDiff.push({ x: x, y: y, value: value });
                 }
             }
         }
@@ -46,7 +48,7 @@ export default class Field {
                     let draw = !(item.isFood && item.lifeTime < 6 && item.lifeTime % 2 !== 0);
                     if (draw)
                         tableDiff.push({ x: point[0], y: point[1], value: true });
-                    t[point[0]][point[1]] = draw;
+                    t[sizeX * point[1] + point[0]] = draw;
                 }
             }
         }
@@ -93,5 +95,19 @@ export default class Field {
     clear() {
         this._items = [];
         this._count = 0;
+    }
+
+    freeCells() {
+        if (!this._previousTable)
+            return null;
+
+        const t = this._previousTable;
+        let cells = [];
+        for (let i = 0; i < t.length; ++i) {
+            if (!t[i])
+                cells.push(i);
+        }
+
+        return cells;
     }
 }

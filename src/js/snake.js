@@ -130,57 +130,14 @@ export default class Snake extends GameItem {
     }
 
     place(field) {
-        if (this.initialized()) {
-            let placed = !field.items.some(item => item.points.some(point => this._points.some(p => p[0] === point[0] && p[1] === point[1])));
+        if (!this.initialized())
+            return false;
+        let placed = !field.items.some(item => item.points.some(point =>
+            this._points.some(p => p[0] === point[0] && p[1] === point[1])));
 
-            if (placed)
-                this._connected = true;
-
-            return placed;
-        }
-
-        let placed = false;
-        let counter = 0;
-        let outOfCounter = field.sizeX * field.sizeY;
-
-        do {
-            if (counter >= outOfCounter)
-                return false;
-
-            let x1 = Math.floor(Math.random() * field.sizeX);
-            let y1 = Math.floor(Math.random() * field.sizeY);
-            let angle = Math.floor(Math.random() * 4);
-            let x2, y2;
-            switch(angle) {
-                case 0:
-                    x2 = x1 ? x1 - 1 : x1 + 1;
-                    y2 = y1;
-                    break;
-                case 1:
-                    x2 = x1;
-                    y2 = y1 ? y1 - 1 : y1 + 1;
-                    break;
-                case 2:
-                    x2 = x1 < (field.sizeX - 1) ? x1 + 1 : x1 - 1;
-                    y2 = y1;
-                    break;
-                case 3:
-                    x2 = x1;
-                    y2 = y1 < (field.sizeY - 1) ? y1 + 1 : y1 - 1;
-                    break;
-            }
-            
-            if (field.items.some(item => item.points.some(point =>
-                (point[0] === x1 && point[1] === y1) || (point[0] === x2 && point[1] === y2)))) {
-                counter++;
-                continue;
-            }
-            
-            this._points = [[x1, y1], [x2, y2]];
+        if (placed)
             this._connected = true;
-            placed = true;
-        } while (!placed);
 
-        return true;
+        return placed;
     }
 }

@@ -35,22 +35,16 @@ export default class Rabbit extends Food {
         if (this._connected)
             return false;
 
-        let placed = false;
-
         if (this.initialized())
             return !(field.items.some(item => item.points.some(point => point[0] === this._x && point[1] === this._y)));
-        
-        do {
-            let x = Math.floor(Math.random() * field.sizeX);
-            let y = Math.floor(Math.random() * field.sizeY);
-            
-            if (field.items.some(item => item.points.some(point => point[0] === x && point[1] === y)))
-                continue;
-            
-            this.x = x;
-            this.y = y;
-            placed = true;
-        } while (!placed);
+
+        const cells = field.freeCells();
+        if (!cells)
+            return false;
+
+        let i = cells[Math.floor(Math.random() * cells.length)];
+        this.y = Math.floor(i / field.sizeX);
+        this.x = i % field.sizeX;
 
         this._connected = true;
         return true;

@@ -124,21 +124,10 @@ export default class Game {
     }
 
     render() {
-        // let time = performance.now();
-
         const table = this._field.table();
 
-        // time = performance.now() - time;
-        // console.log('table()', time);
-
-        // time = performance.now();
-
-        for (let i = 0; i < table.length; ++i) {
+        for (let i = 0; i < table.length; ++i)
             this._cells[table[i].x][table[i].y].className = 'snake-cell' + (table[i].value ? ' snake-cell_active' : '');
-        }
-
-        // time = performance.now() - time;
-        // console.log('render()', time);
     }
 
     run(restart = false, levelUp = false) {
@@ -160,6 +149,7 @@ export default class Game {
 
         this._snake.init(start, end);
         this._field.addItem(this._snake);
+        this.render();
         let rabbit = new Rabbit(this._foodLifeTime);
         this._field.addItem(rabbit);
         this.render();
