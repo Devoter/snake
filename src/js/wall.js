@@ -36,7 +36,7 @@ export default class Wall extends GameItem {
 
     place(field) {
         if (!this._connected && this.initialized() && !field.items.some(item => item.points.some(point =>
-            this._points.some(p => point[0] === p[0] && point[1] === p[1])))) {
+                this._points.some(p => point[0] === p[0] && point[1] === p[1])))) {
             this._connected = true;
             return true;
         }

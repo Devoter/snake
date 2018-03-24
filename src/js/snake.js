@@ -18,7 +18,7 @@ export default class Snake extends GameItem {
 
     init(start, end) {
         if (!(start instanceof Array) || !(end instanceof Array) || start.length !== 2 || end.length !== 2)
-        return;
+            return;
 
         this._points.push(start);
         this._points.push(end);
@@ -111,7 +111,7 @@ export default class Snake extends GameItem {
         let moved = this.move(field, head => head[1] >= 0, 0, -1);
         if (moved === 3)
             return this.moveNext(field);
-        
+
         this._angle = 1;
         return moved;
     }

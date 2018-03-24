@@ -117,7 +117,7 @@ const levels = [
                 end: [9, 2]
             }
         ]
-     },
+    },
     {
         speed: 0,
         score: 350,

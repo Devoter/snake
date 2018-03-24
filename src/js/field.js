@@ -35,7 +35,7 @@ export default class Field {
                     let i = sizeX * y + x;
                     let value = t[i];
                     if (this._previousTable[i] !== value)
-                        tableDiff.push({ x: x, y: y, value: value });
+                        tableDiff.push({x: x, y: y, value: value});
                 }
             }
         }
@@ -47,7 +47,7 @@ export default class Field {
                     let point = points[j];
                     let draw = !(item.isFood && item.lifeTime < 6 && item.lifeTime % 2 !== 0);
                     if (draw)
-                        tableDiff.push({ x: point[0], y: point[1], value: true });
+                        tableDiff.push({x: point[0], y: point[1], value: true});
                     t[sizeX * point[1] + point[0]] = draw;
                 }
             }
