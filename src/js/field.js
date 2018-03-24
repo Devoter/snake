@@ -110,4 +110,8 @@ export default class Field {
 
         return cells;
     }
+
+    clearPreviousTable() {
+        this._previousTable = null;
+    }
 }

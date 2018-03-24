@@ -5,13 +5,10 @@ import Field from './field';
 
 export default class Game {
     constructor(levels = null, sizeX = 10, sizeY = 20, baseSpeed = 400, speedFactor = 10, speedIterationsCount = 25, foodLifeTime = 25, foodFactor = 1,
-        inputQueueLimit = 4) {
+        inputQueueLimit = 4, cellRenderer = null) {
         this._field = new Field(sizeX, sizeY);
-        this._cells = new Array(sizeX);
-        for (let x = 0; x < sizeX; ++x)
-            this._cells[x] = new Array(sizeY);
-
         this._elements = {
+            display: document.getElementById('snake-display'),
             highScore: document.getElementById('high-score'),
             score:  document.getElementById('score'),
             level: document.getElementById('level'),
@@ -30,7 +27,8 @@ export default class Game {
             downButton: document.getElementById('snake-down')
         };
 
-        this._createFieldLayout(sizeX, sizeY);
+        this._sizeX = sizeX;
+        this._sizeY = sizeY;
         this._snake = null;
         this._input = [];
         this._iterationTimer = null;
@@ -52,10 +50,15 @@ export default class Game {
         this._pause = false;
         this._inputQueueLimit = inputQueueLimit;
         this._levels = levels;
+        this._cellRenderer = cellRenderer;
+        this._activePrerenderedCell = null;
+        this._inactivePrerenderedCell = null;
+        this._windowResized = false;
 
         this.nextIteration = this.nextIteration.bind(this);
         this._onKeyUp = this._onKeyUp.bind(this);
         this._onClick = this._onClick.bind(this);
+        this._onWindowResize = this._onWindowResize.bind(this);
         this._availableKeys = [37, 38, 39, 40, 65, 87, 68, 83];
 
         this._bindButtons();
@@ -120,14 +123,26 @@ export default class Game {
 
     destroy() {
         this.stop();
-        this._clearFieldLayout();
+        this.clearFieldLayout();
+    }
+
+    setCellRenderer(renderer) {
+        if (typeof(renderer) === 'function')
+            this._cellRenderer = renderer;
     }
 
     render() {
         const table = this._field.table();
+        const display = this._elements.display;
+        const width = display.width / this._sizeX;
+        const height = display.height / this._sizeY;
+        const ctx = display.getContext('2d');
 
-        for (let i = 0; i < table.length; ++i)
-            this._cells[table[i].x][table[i].y].className = 'snake-cell' + (table[i].value ? ' snake-cell_active' : '');
+        for (let i = 0; i < table.length; ++i) {
+            ctx.clearRect(table[i].x * width, table[i].y * height, width, height);
+            ctx.drawImage(table[i].value ? this._activePrerenderedCell : this._inactivePrerenderedCell,
+                table[i].x * width, table[i].y * height);
+        }
     }
 
     run(restart = false, levelUp = false) {
@@ -167,6 +182,7 @@ export default class Game {
 
         window.removeEventListener('keyup', this._onKeyUp);
         window.removeEventListener('click', this._onClick);
+        window.removeEventListener('resize', this._onWindowResize);
         this.reset();
     }
 
@@ -185,6 +201,9 @@ export default class Game {
     }
 
     nextIteration() {
+        if (this._windowResized)
+            this._scaleDisplay();
+
         --this._speedIterationsCount;
         if (!this._speedIterationsCount) {
             ++this.speed;
@@ -268,22 +287,37 @@ export default class Game {
             input.push(keyCode);
     }
 
-    _createFieldLayout(sizeX, sizeY) {
-        const container = this._elements.snakeGame;
+    createFieldLayout() {
+        if (!this._cellRenderer)
+            return false;
 
-        for (let y = 0; y < sizeY; ++y) {
-            for (let x = 0; x < sizeX; ++x) {
-                let cell = document.createElement('div');
-                cell.className = 'snake-cell';
-                this._cells[x][y] = cell;
-                container.appendChild(cell);
-            }
+        const sizeX = this._sizeX;
+        const sizeY = this._sizeY;
+        const display = this._elements.display;
+
+        display.width = display.clientWidth;
+        display.height = display.clientHeight;
+        const ctx = display.getContext('2d');
+
+        const cellWidth = display.width / sizeX;
+        const cellHeight = display.height / sizeY;
+
+        this._activePrerenderedCell = this._cellRenderer(cellWidth, cellHeight, true);
+        this._inactivePrerenderedCell = this._cellRenderer(cellWidth, cellHeight);
+
+        for (let i = 0; i < sizeX; ++i) {
+            for (let j = 0; j < sizeY; ++j)
+                ctx.drawImage(this._inactivePrerenderedCell, i * cellWidth, j * cellHeight);
         }
 
+        return true;
     }
 
-    _clearFieldLayout() {
-        this._elements.snakeGame.innerHTML = '';
+    clearFieldLayout() {
+        const display = this._elements.display;
+
+        display.width = display.clientWidth;
+        display.height = display.clientHeight;
     }
 
     _incrementLevelScore(value) {
@@ -313,6 +347,7 @@ export default class Game {
     _bindEvents() {
         window.addEventListener('keyup', this._onKeyUp);
         window.addEventListener('click', this._onClick);
+        window.addEventListener('resize', this._onWindowResize);
     }
 
     _onKeyUp(event) {
@@ -420,5 +455,19 @@ export default class Game {
                 this.addInput(40);
         });
         this._elements.helpButton.addEventListener('click', () => this._onKeyUp({keyCode: 27}));
+    }
+
+    _onWindowResize() {
+        if (this._gameOver)
+            this._scaleDisplay();
+        else
+            this._windowResized = true;
+    }
+
+    _scaleDisplay() {
+        this._windowResized = false;
+        this._field.clearPreviousTable();
+        this.createFieldLayout();
+        this.render();
     }
 }

@@ -1,22 +1,12 @@
 const levels = [
     {
         speed: 0,
-        score: 50,
-        items: []
-    },
-    {
-        speed: 1,
-        score: 300,
-        items: []
-    },
-    {
-        speed: 2,
-        score: 500,
+        score: 100,
         items: []
     },
     {
         speed: 0,
-        score: 500,
+        score: 150,
         items: [
             {
                 type: 'wall',
@@ -32,7 +22,7 @@ const levels = [
     },
     {
         speed: 0,
-        score: 1000,
+        score: 200,
         items: [
             {
                 type: 'wall',
@@ -58,7 +48,7 @@ const levels = [
     },
     {
         speed: 0,
-        score: 500,
+        score: 250,
         items: [
             {
                 type: 'wall',
@@ -94,7 +84,7 @@ const levels = [
     },
     {
         speed: 0,
-        score: 500,
+        score: 300,
         items: [
             {
                 type: 'wall',
@@ -130,7 +120,7 @@ const levels = [
      },
     {
         speed: 0,
-        score: 256,
+        score: 350,
         items: [
             {
                 type: 'wall',
