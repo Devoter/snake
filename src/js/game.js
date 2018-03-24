@@ -14,7 +14,6 @@ export default class Game {
             level: document.getElementById('level'),
             speed: document.getElementById('speed'),
             gameOver: document.getElementById('game-over'),
-            snakeGame: document.getElementById('snake'),
             help: document.getElementById('help'),
             pause: document.getElementById('pause'),
             arrowsEnableButton: document.getElementById('snake-arrows-enable'),
