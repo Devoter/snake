@@ -4,13 +4,13 @@ import Snake from './snake';
 import Field from './field';
 
 export default class Game {
-    constructor(levels = null, sizeX = 10, sizeY = 20, baseSpeed = 400, speedFactor = 10, speedIterationsCount = 25, foodLifeTime = 25, foodFactor = 1,
-        inputQueueLimit = 4, cellRenderer = null) {
+    constructor(levels = null, sizeX = 10, sizeY = 20, baseSpeed = 400, speedFactor = 10, speedIterationsCount = 25,
+                foodLifeTime = 25, foodFactor = 1, inputQueueLimit = 4, cellRenderer = null) {
         this._field = new Field(sizeX, sizeY);
         this._elements = {
             display: document.getElementById('snake-display'),
             highScore: document.getElementById('high-score'),
-            score:  document.getElementById('score'),
+            score: document.getElementById('score'),
             level: document.getElementById('level'),
             speed: document.getElementById('speed'),
             gameOver: document.getElementById('game-over'),
@@ -220,7 +220,7 @@ export default class Game {
 
         let lastKey = this._input.shift();
 
-        switch(lastKey) {
+        switch (lastKey) {
             case 87: // W
             case 38: // UP
                 moved = this._snake.moveUp(this._field);
