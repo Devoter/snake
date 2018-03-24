@@ -95,10 +95,6 @@ let config = {
         new ExtractTextPlugin('style.css'),
         new CopyWebpackPlugin([
             {
-                from: './img',
-                to: 'img'
-            },
-            {
                 from: './offline.manifest',
                 to: 'offline.manifest'
             }
