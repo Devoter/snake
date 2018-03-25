@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 class Game {
-    constructor(levels = null, sizeX = 10, sizeY = 20, baseSpeed = 400, speedFactor = 10, speedIterationsCount = 25,
+    constructor(levels = null, sizeX = 10, sizeY = 20, baseSpeed = 300, speedFactor = 10, speedIterationsCount = 25,
                 foodLifeTime = 25, foodFactor = 1, inputQueueLimit = 4, cellRenderer = null) {
         this._field = new __WEBPACK_IMPORTED_MODULE_3__field__["a" /* default */](sizeX, sizeY);
         this._elements = {
