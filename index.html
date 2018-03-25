@@ -10,7 +10,9 @@
 <body>
     <div class="container" id="container">
         <div class="display" id="display">
-            <div class="snake" id="snake"></div>
+            <div class="snake">
+                <canvas class="snake__display" id="snake-display"></canvas>
+            </div>
 
             <div class="info">
                 <div class="info-block">
@@ -47,8 +49,7 @@ D, ARROW RIGHT - Move right<br>
 P, SPACE       - Pause<br>
 R, ENTER       - Restart<br>
 H, ESC         - Show this text<br>
-MOUSE          - Move if arrows<br>
-                 is enabled
+C              - Color mode
                 </div>
             </div>
         </div>
@@ -83,13 +84,12 @@ MOUSE          - Move if arrows<br>
                         </div>
 
                         <div class="controls__button-block">
-                            <span class="controls__label">arrows</span>
+                            <span class="controls__label">colors</span>
                             <br>
-                            <button class="push-button push-button_small push-button_active"
-                                    id="snake-arrows-enable"></button>
+                            <button class="push-button push-button_small" id="snake-colors-enable"></button>
                         </div>
                     </div>
-            
+
                     <button class="push-button push-button_big" id="snake-pause">PAUSE</button>
                 </div>
             </div>
