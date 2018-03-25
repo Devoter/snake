@@ -1,4 +1,4 @@
-function cellRenderer(width, height, active = false) {
+function cellRenderer(width, height, active = false, type = 'default') {
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
@@ -12,7 +12,15 @@ function cellRenderer(width, height, active = false) {
     const squarePaddingFactor = 0.2;
     const lr = width * squarePaddingFactor;
     const tb = height * squarePaddingFactor;
-    const color = `rgba(0, 0, 0, 0.${active ? 9 : 2})`;
+    const color = (() => {
+        if (!active)
+            return 'rgba(0, 0, 0, 0.2)';
+        else if (type === 'food')
+            return 'rgba(135, 64, 80, 0.9)';
+        else if (type === 'snake')
+            return '#0c3a4f';
+        return 'rgba(0, 0, 0, 0.9)';
+    })();
 
     context.strokeStyle = color;
     context.fillStyle = color;

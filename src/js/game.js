@@ -16,7 +16,7 @@ export default class Game {
             gameOver: document.getElementById('game-over'),
             help: document.getElementById('help'),
             pause: document.getElementById('pause'),
-            arrowsEnableButton: document.getElementById('snake-arrows-enable'),
+            colorsEnableButton: document.getElementById('snake-colors-enable'),
             helpButton: document.getElementById('snake-help'),
             pauseButton: document.getElementById('snake-pause'),
             resetButton: document.getElementById('snake-reset'),
@@ -35,8 +35,8 @@ export default class Game {
         this._speed = 0;
         this._speedFactor = speedFactor;
         this.highScore = Number(localStorage.getItem('snakeHighScore'));
-        let arrowsEnable = localStorage.getItem('snakeArrowsEnable');
-        this.arrowsEnable = arrowsEnable === undefined ? true : !!arrowsEnable;
+        let colorsEnable = localStorage.getItem('snakeColorsEnable');
+        this.colorsEnable = colorsEnable === undefined ? false : (colorsEnable === "true");
         this._score = 0;
         this._levelScore = 0;
         this._showHelp = false;
@@ -52,12 +52,13 @@ export default class Game {
         this._cellRenderer = cellRenderer;
         this._activePrerenderedCell = null;
         this._inactivePrerenderedCell = null;
-        this._windowResized = false;
+        this._foodPrerenderedCell = null;
+        this._snakePrerenderedCell = null;
+        this._shouldRedrawDisplay = false;
 
         this.nextIteration = this.nextIteration.bind(this);
         this._onKeyUp = this._onKeyUp.bind(this);
-        this._onClick = this._onClick.bind(this);
-        this._onWindowResize = this._onWindowResize.bind(this);
+        this.redrawDisplay = this.redrawDisplay.bind(this);
         this._availableKeys = [37, 38, 39, 40, 65, 87, 68, 83];
 
         this._bindButtons();
@@ -83,8 +84,8 @@ export default class Game {
         return this._gameOver;
     }
 
-    get arrowsEnable() {
-        return this._arrowsEnable;
+    get colorsEnable() {
+        return this._colorsEnable;
     }
 
     set highScore(value) {
@@ -114,10 +115,11 @@ export default class Game {
         this._elements.gameOver.innerHTML = value ? 'GAME<br>OVER' : '';
     }
 
-    set arrowsEnable(value) {
-        this._arrowsEnable = !!value;
-        this._elements.arrowsEnableButton.className = 'push-button push-button_small' + (value ? ' push-button_active' : '');
-        localStorage.setItem('snakeArrowsEnable', this._arrowsEnable);
+    set colorsEnable(value) {
+        this._colorsEnable = !!value;
+        this._elements.colorsEnableButton.className = 'push-button push-button_small' + (value ? ' push-button_active' : '');
+        localStorage.setItem('snakeColorsEnable', this._colorsEnable);
+        this.redrawDisplay();
     }
 
     destroy() {
@@ -139,8 +141,21 @@ export default class Game {
 
         for (let i = 0; i < table.length; ++i) {
             ctx.clearRect(table[i].x * width, table[i].y * height, width, height);
-            ctx.drawImage(table[i].value ? this._activePrerenderedCell : this._inactivePrerenderedCell,
-                table[i].x * width, table[i].y * height);
+            let cell;
+            switch(table[i].value) {
+                case 0:
+                    cell = this._inactivePrerenderedCell;
+                    break;
+                case 1:
+                    cell = this._foodPrerenderedCell;
+                    break;
+                case 2:
+                    cell = this._snakePrerenderedCell;
+                    break;
+                case 3:
+                    cell = this._activePrerenderedCell;
+            }
+            ctx.drawImage(cell, table[i].x * width, table[i].y * height);
         }
     }
 
@@ -180,8 +195,7 @@ export default class Game {
         }
 
         window.removeEventListener('keyup', this._onKeyUp);
-        window.removeEventListener('click', this._onClick);
-        window.removeEventListener('resize', this._onWindowResize);
+        window.removeEventListener('resize', this.redrawDisplay);
         this.reset();
     }
 
@@ -200,8 +214,8 @@ export default class Game {
     }
 
     nextIteration() {
-        if (this._windowResized)
-            this._scaleDisplay();
+        if (this._shouldRedrawDisplay)
+            this._redrawDisplay();
 
         --this._speedIterationsCount;
         if (!this._speedIterationsCount) {
@@ -300,9 +314,12 @@ export default class Game {
 
         const cellWidth = display.width / sizeX;
         const cellHeight = display.height / sizeY;
+        const colorsEnable = this.colorsEnable;
 
         this._activePrerenderedCell = this._cellRenderer(cellWidth, cellHeight, true);
         this._inactivePrerenderedCell = this._cellRenderer(cellWidth, cellHeight);
+        this._foodPrerenderedCell = this._cellRenderer(cellWidth, cellHeight, true, colorsEnable ? 'food' : 'default');
+        this._snakePrerenderedCell = this._cellRenderer(cellWidth, cellHeight, true, colorsEnable ? 'snake' : 'default');
 
         for (let i = 0; i < sizeX; ++i) {
             for (let j = 0; j < sizeY; ++j)
@@ -317,6 +334,13 @@ export default class Game {
 
         display.width = display.clientWidth;
         display.height = display.clientHeight;
+    }
+
+    redrawDisplay() {
+        if (this.gameOver)
+            this._redrawDisplay();
+        else
+            this._shouldRedrawDisplay = true;
     }
 
     _incrementLevelScore(value) {
@@ -345,12 +369,11 @@ export default class Game {
 
     _bindEvents() {
         window.addEventListener('keyup', this._onKeyUp);
-        window.addEventListener('click', this._onClick);
-        window.addEventListener('resize', this._onWindowResize);
+        window.addEventListener('resize', this.redrawDisplay);
     }
 
     _onKeyUp(event) {
-        if (event.keyCode === 82 || event.keyCode === 13) { // restart
+        if (event.keyCode === 82 || event.keyCode === 13) { // 'r' or ENTER: restart
             if (this._showHelp || this._pause)
                 return;
 
@@ -361,12 +384,12 @@ export default class Game {
                 return;
             }
         }
-        else if (event.keyCode === 80 || event.keyCode === 32) { // pause
+        else if (event.keyCode === 80 || event.keyCode === 32) { // 'p' or SPACE: pause
             if (!this._showHelp)
                 this._togglePause();
             return;
         }
-        else if (event.keyCode === 72 || event.keyCode === 27) { // help
+        else if (event.keyCode === 72 || event.keyCode === 27) { // 'h' or ESC: help
             this._showHelp = !this._showHelp;
 
             this._elements.help.className = 'help' + (this._showHelp ? '' : ' help_hidden');
@@ -374,33 +397,9 @@ export default class Game {
             if (!this._pause)
                 this._togglePause(true);
         }
+        else if (event.keyCode === 67) // 'c': colors
+            this.colorsEnable = !this.colorsEnable;
         this.addInput(event.keyCode);
-    }
-
-    _onClick(event) {
-        if (this._showHelp || this._pause || this.arrowsEnable)
-            return;
-
-        const angle = this._snake.angle;
-        const x = event.x;
-        const y = event.y;
-        const snakeHead = this._getSnakeHeadElement();
-        const rect = snakeHead.getBoundingClientRect();
-        const rectXRight = rect.x + rect.width;
-        const rectYBottom = rect.y + rect.height;
-        const deltaXL = rect.x - x;
-        const deltaYT = rect.y - y;
-        const deltaXR = x - rectXRight;
-        const deltaYB = y - rectYBottom;
-
-        if (x < rect.x && ((deltaXL > deltaYT && angle === 1) || (deltaXL > deltaYB && angle === 3))) // left
-            this.addInput(37);
-        else if (y < rect.y && ((deltaYT > deltaXL && angle === 0) || (deltaYT > deltaXR && angle === 2))) // top
-            this.addInput(38);
-        else if (x > rectXRight && ((deltaXR > deltaYT && angle === 1) || (deltaXR > deltaYB && angle === 3))) // right
-            this.addInput(39);
-        else if (y > rectYBottom && ((deltaYB > deltaXL && angle === 0) || (deltaYB > deltaXR && angle === 2))) // bottom
-            this.addInput(40);
     }
 
     _togglePause(ignoreFlag = false) {
@@ -428,43 +427,19 @@ export default class Game {
         return this._baseSpeed - this._speed * this._speedFactor;
     }
 
-    _getSnakeHeadElement() {
-        const head = this._snake.points[this._snake.points.length - 1];
-        return this._cells[head[0]][head[1]];
-    }
-
     _bindButtons() {
-        this._elements.arrowsEnableButton.addEventListener('click', () => this.arrowsEnable = !this.arrowsEnable);
         this._elements.pauseButton.addEventListener('click', () => this._onKeyUp({keyCode: 32}));
         this._elements.resetButton.addEventListener('click', () => this._onKeyUp({keyCode: 13}));
-        this._elements.leftButton.addEventListener('click', () => {
-            if (this.arrowsEnable)
-                this.addInput(37);
-        });
-        this._elements.upButton.addEventListener('click', () => {
-            if (this.arrowsEnable)
-                this.addInput(38);
-        });
-        this._elements.rightButton.addEventListener('click', () => {
-            if (this.arrowsEnable)
-                this.addInput(39);
-        });
-        this._elements.downButton.addEventListener('click', () => {
-            if (this.arrowsEnable)
-                this.addInput(40);
-        });
+        this._elements.leftButton.addEventListener('click', () => this.addInput(37));
+        this._elements.upButton.addEventListener('click', () => this.addInput(38));
+        this._elements.rightButton.addEventListener('click', () => this.addInput(39));
+        this._elements.downButton.addEventListener('click', () => this.addInput(40));
         this._elements.helpButton.addEventListener('click', () => this._onKeyUp({keyCode: 27}));
+        this._elements.colorsEnableButton.addEventListener('click', () => this.colorsEnable = !this.colorsEnable);
     }
 
-    _onWindowResize() {
-        if (this._gameOver)
-            this._scaleDisplay();
-        else
-            this._windowResized = true;
-    }
-
-    _scaleDisplay() {
-        this._windowResized = false;
+    _redrawDisplay() {
+        this._shouldRedrawDisplay = false;
         this._field.clearPreviousTable();
         this.createFieldLayout();
         this.render();

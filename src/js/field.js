@@ -1,4 +1,5 @@
 import GameItem from './game-item';
+import Snake from './snake';
 
 export default class Field {
     constructor(sizeX, sizeY) {
@@ -16,7 +17,7 @@ export default class Field {
 
     table() {
         let tableDiff = [];
-        let t = new Array(this._maxCount).fill(false);
+        let t = new Array(this._maxCount).fill(0);
         const sizeX = this._sizeX;
         const sizeY = this._sizeY;
 
@@ -27,7 +28,12 @@ export default class Field {
                 for (let j = 0; j < points.length; ++j) {
                     let point = points[j];
                     let index = sizeX * point[1] + point[0];
-                    t[index] = !(item.isFood && item.lifeTime < 6 && item.lifeTime % 2 !== 0);
+                    if (item.isFood)
+                        t[index] = (item.lifeTime < 6 && item.lifeTime % 2 !== 0) ? 0 : 1;
+                    else if (item instanceof Snake)
+                        t[index] = 2;
+                    else
+                        t[index] = 3;
                 }
             }
             for (let x = 0; x < sizeX; ++x) {
@@ -45,9 +51,16 @@ export default class Field {
                 let points = item.points;
                 for (let j = 0; j < points.length; ++j) {
                     let point = points[j];
-                    let draw = !(item.isFood && item.lifeTime < 6 && item.lifeTime % 2 !== 0);
+                    let draw;
+                    if (item.isFood)
+                        draw = (item.lifeTime < 6 && item.lifeTime % 2 !== 0) ? 0 : 1;
+                    else if (item instanceof Snake)
+                        draw = 2;
+                    else
+                        draw = 3;
+
                     if (draw)
-                        tableDiff.push({x: point[0], y: point[1], value: true});
+                        tableDiff.push({x: point[0], y: point[1], value: draw});
                     t[sizeX * point[1] + point[0]] = draw;
                 }
             }
