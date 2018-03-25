@@ -4,7 +4,7 @@ import Snake from './snake';
 import Field from './field';
 
 export default class Game {
-    constructor(levels = null, sizeX = 10, sizeY = 20, baseSpeed = 400, speedFactor = 10, speedIterationsCount = 25,
+    constructor(levels = null, sizeX = 10, sizeY = 20, baseSpeed = 300, speedFactor = 10, speedIterationsCount = 25,
                 foodLifeTime = 25, foodFactor = 1, inputQueueLimit = 4, cellRenderer = null) {
         this._field = new Field(sizeX, sizeY);
         this._elements = {
