@@ -17,6 +17,7 @@ export default class Game {
             help: document.getElementById('help'),
             pause: document.getElementById('pause'),
             colorsEnableButton: document.getElementById('snake-colors-enable'),
+            vibrationEnableButton: document.getElementById('snake-vibration-enable'),
             helpButton: document.getElementById('snake-help'),
             pauseButton: document.getElementById('snake-pause'),
             resetButton: document.getElementById('snake-reset'),
@@ -36,7 +37,9 @@ export default class Game {
         this._speedFactor = speedFactor;
         this.highScore = Number(localStorage.getItem('snakeHighScore'));
         let colorsEnable = localStorage.getItem('snakeColorsEnable');
-        this.colorsEnable = colorsEnable === undefined ? false : (colorsEnable === "true");
+        this.colorsEnable = colorsEnable === null ? false : (colorsEnable === 'true');
+        let vibrationEnable = localStorage.getItem('snakeVibrationEnable');
+        this.vibrationEnable = vibrationEnable === null ? true : (vibrationEnable === 'true');
         this._score = 0;
         this._levelScore = 0;
         this._showHelp = false;
@@ -88,6 +91,10 @@ export default class Game {
         return this._colorsEnable;
     }
 
+    get vibrationEnable() {
+        return this._vibrationEnable;
+    }
+
     set highScore(value) {
         this._highScore = value;
         this._elements.highScore.innerHTML = value;
@@ -122,6 +129,12 @@ export default class Game {
         this.redrawDisplay();
     }
 
+    set vibrationEnable(value) {
+        this._vibrationEnable = !!value;
+        this._elements.vibrationEnableButton.className = 'push-button push-button_small' + (value ? ' push-button_active' : '');
+        localStorage.setItem('snakeVibrationEnable', this._vibrationEnable);
+    }
+
     destroy() {
         this.stop();
         this.clearFieldLayout();
@@ -142,7 +155,7 @@ export default class Game {
         for (let i = 0; i < table.length; ++i) {
             ctx.clearRect(table[i].x * width, table[i].y * height, width, height);
             let cell;
-            switch(table[i].value) {
+            switch (table[i].value) {
                 case 0:
                     cell = this._inactivePrerenderedCell;
                     break;
@@ -399,6 +412,8 @@ export default class Game {
         }
         else if (event.keyCode === 67) // 'c': colors
             this.colorsEnable = !this.colorsEnable;
+        else if (event.keyCode === 86) // 'v': vibration
+            this.vibrationEnable = !this.vibrationEnable;
         this.addInput(event.keyCode);
     }
 
@@ -428,14 +443,23 @@ export default class Game {
     }
 
     _bindButtons() {
-        this._elements.pauseButton.addEventListener('click', () => this._onKeyUp({keyCode: 32}));
-        this._elements.resetButton.addEventListener('click', () => this._onKeyUp({keyCode: 13}));
-        this._elements.leftButton.addEventListener('click', () => this.addInput(37));
-        this._elements.upButton.addEventListener('click', () => this.addInput(38));
-        this._elements.rightButton.addEventListener('click', () => this.addInput(39));
-        this._elements.downButton.addEventListener('click', () => this.addInput(40));
-        this._elements.helpButton.addEventListener('click', () => this._onKeyUp({keyCode: 27}));
-        this._elements.colorsEnableButton.addEventListener('click', () => this.colorsEnable = !this.colorsEnable);
+        let vibrationClick = func => function () {
+            func();
+            if (this.vibrationEnable)
+                navigator.vibrate(35);
+        }.bind(this);
+
+        this._elements.pauseButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 32})));
+        this._elements.resetButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 13})));
+        this._elements.leftButton.addEventListener('click', vibrationClick(() => this.addInput(37)));
+        this._elements.upButton.addEventListener('click', vibrationClick(() => this.addInput(38)));
+        this._elements.rightButton.addEventListener('click', vibrationClick(() => this.addInput(39)));
+        this._elements.downButton.addEventListener('click', vibrationClick(() => this.addInput(40)));
+        this._elements.helpButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 27})));
+        this._elements.colorsEnableButton.addEventListener('click',
+            vibrationClick(() => this.colorsEnable = !this.colorsEnable));
+        this._elements.vibrationEnableButton.addEventListener('click',
+            vibrationClick(() => this.vibrationEnable = !this.vibrationEnable));
     }
 
     _redrawDisplay() {

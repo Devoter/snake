@@ -1,19 +1,19 @@
 .info-block {
-    display: flex;
-    flex-direction: column;
-    padding: 2vh;
-    user-select: none;
+  display: flex;
+  flex-direction: column;
+  padding: 2vh;
+  user-select: none;
 
-    &__label {
-        font-size: 2vh;
-        font-weight: bold;
-        display: block;
-        text-align: right;
-    }
+  &__label {
+    font-size: 2vh;
+    font-weight: bold;
+    display: block;
+    text-align: right;
+  }
 
-    &__value {
-        font-size: 2vh;
-        display: block;
-        text-align: right;
-    } 
+  &__value {
+    font-size: 2vh;
+    display: block;
+    text-align: right;
+  }
 }

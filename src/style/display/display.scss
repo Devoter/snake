@@ -1,12 +1,14 @@
 .display {
-    --height: 60vh;
-    font-family: monospace;
-    background-color: #6d775c;
+  --height: 60vh;
+  font-family: monospace;
+  background-color: #6d775c;
 
-    border: 1px solid;
-    display: flex;
-    flex-direction: row;
-    width: calc(var(--height) * 0.74);
-    height: var(--height);
+  border: 1px solid;
+  display: flex;
+  flex-direction: row;
+  width: calc(var(--height) * 0.74);
+  height: var(--height);
+
+  position: relative;
 }
  

@@ -9,39 +9,47 @@
 </head>
 <body>
     <div class="container" id="container">
-        <div class="display" id="display">
-            <div class="snake">
-                <canvas class="snake__display" id="snake-display"></canvas>
-            </div>
-
-            <div class="info">
-                <div class="info-block">
-                    <label class="info-block__label">Hi-Score</label>
-                    <span class="info-block__value" id="high-score">0</span>
-                </div>
-                <div class="info-block">
-                    <label class="info-block__label">Score</label>
-                    <span class="info-block__value" id="score">0</span>
-                </div>
-                <div class="info-block">
-                    <label class="info-block__label">Level</label>
-                    <span class="info-block__value" id="level">0</span>
-                </div>
-                <div class="info-block">
-                    <label class="info-block__label">Speed</label>
-                    <span class="info-block__value" id="speed">0</span>
-                </div>
-                <div class="info-block">
-                    <label class="info-block__label" id="pause"></label>
-                </div>
-                <div class="info-block">
-                    <label class="info-block__label" id="game-over"></label>
+        <div class="top-part">
+            <div class="side-panel">
+                <div class="button-block">
+                    <span class="button-block__label">vibro</span>
+                    <br>
+                    <button class="push-button push-button_small" id="snake-vibration-enable"></button>
                 </div>
             </div>
+            <div class="display" id="display">
+                <div class="snake">
+                    <canvas class="snake__display" id="snake-display"></canvas>
+                </div>
 
-            <div class="help help_hidden" id="help">
-                <header class="help__header">CONTROLS</header>
-                <div class="help__content">
+                <div class="info display__info">
+                    <div class="info-block">
+                        <label class="info-block__label">Hi-Score</label>
+                        <span class="info-block__value" id="high-score">0</span>
+                    </div>
+                    <div class="info-block">
+                        <label class="info-block__label">Score</label>
+                        <span class="info-block__value" id="score">0</span>
+                    </div>
+                    <div class="info-block">
+                        <label class="info-block__label">Level</label>
+                        <span class="info-block__value" id="level">0</span>
+                    </div>
+                    <div class="info-block">
+                        <label class="info-block__label">Speed</label>
+                        <span class="info-block__value" id="speed">0</span>
+                    </div>
+                    <div class="info-block">
+                        <label class="info-block__label" id="pause"></label>
+                    </div>
+                    <div class="info-block">
+                        <label class="info-block__label" id="game-over"></label>
+                    </div>
+                </div>
+
+                <div class="help help_hidden" id="help">
+                    <header class="help__header">CONTROLS</header>
+                    <div class="help__content">
 W, ARROW UP    - Move up<br>
 S, ARROW DOWN  - Move down<br>
 A, ARROW LEFT  - Move left<br>
@@ -49,7 +57,9 @@ D, ARROW RIGHT - Move right<br>
 P, SPACE       - Pause<br>
 R, ENTER       - Restart<br>
 H, ESC         - Show this text<br>
-C              - Color mode
+C              - Color mode<br>
+V              - Vibration
+                    </div>
                 </div>
             </div>
         </div>
@@ -71,20 +81,20 @@ C              - Color mode
 
                 <div>
                     <div class="controls__reset">
-                        <div class="controls__button-block">
-                            <span class="controls__label">help</span>
+                        <div class="button-block">
+                            <span class="button-block__label">help</span>
                             <br>
                             <button class="push-button push-button_small" id="snake-help"></button>
                         </div>
 
-                        <div class="controls__button-block">
-                            <span class="controls__label">reset</span>
+                        <div class="button-block">
+                            <span class="button-block__label">reset</span>
                             <br>
                             <button class="push-button push-button_small" id="snake-reset"></button>
                         </div>
 
-                        <div class="controls__button-block">
-                            <span class="controls__label">colors</span>
+                        <div class="button-block">
+                            <span class="button-block__label">colors</span>
                             <br>
                             <button class="push-button push-button_small" id="snake-colors-enable"></button>
                         </div>

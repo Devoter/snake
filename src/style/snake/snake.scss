@@ -1,17 +1,17 @@
 .snake {
-    --height: 60vh;
-    border: 0.5vh solid;
-    display: flex;
-    align-items: stretch;
-    flex-direction: row;
-    flex-grow: 0;
-    flex-shrink: 0;
-    width: calc(var(--height) * 0.5);
-    height: var(--height);
+  --height: 60vh;
+  border: 0.5vh solid;
+  display: flex;
+  align-items: stretch;
+  flex-direction: row;
+  flex-grow: 0;
+  flex-shrink: 0;
+  width: calc(var(--height) * 0.5);
+  height: var(--height);
 
-    &__display {
-        flex-grow: 1;
-        width: 100%;
-        height: 100%;
-    }
+  &__display {
+    flex-grow: 1;
+    width: 100%;
+    height: 100%;
+  }
 } 
