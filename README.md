@@ -38,3 +38,4 @@ Open URL `http://localhost:8080/` and enjoy.
 | `R` | `ENTER`       | Restart    |
 | `H` | `ESCAPE`      | Help       |
 | `C` |               | Color mode |
+| `V` |               | Vibration  |
