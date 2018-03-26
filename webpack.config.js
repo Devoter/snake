@@ -1,10 +1,11 @@
 /* eslint-env node */
 
 const path = require('path');
+const UglifyJsWebpackPlugin = require("uglifyjs-webpack-plugin");
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+// const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const prodMode = process.env.NODE_ENV === 'production';
 
@@ -22,7 +23,12 @@ let config = {
             {
                 test: /\.js$/,
                 exclude: /node_modules/,
-                loader: 'eslint-loader'
+                use: [
+                    {
+                        loader: 'eslint-loader',
+                        options: prodMode ? {minimize: true} : {}
+                    }
+                ]
             },
             {
                 test: /\.scss$/,
@@ -31,7 +37,7 @@ let config = {
                     use: [
                         {
                             loader: 'css-loader',
-                            options: prodMode ? { minimize: true } : {}
+                            options: prodMode ? {minimize: true} : {}
                         },
                         'sass-loader'
                     ]
@@ -90,21 +96,19 @@ let config = {
         ]
     },
     plugins: [
-    new CleanWebpackPlugin(['dist']),
-        new HtmlWebpackPlugin({ template: './index.html' }),
+        new CleanWebpackPlugin(['dist']),
+        new HtmlWebpackPlugin({template: './index.html'}),
         new ExtractTextPlugin('style.css'),
-        new CopyWebpackPlugin([
-            {
-                from: './offline.manifest',
-                to: 'offline.manifest'
-            }
-        ])
+        // new CopyWebpackPlugin([]),
     ],
     devServer: {
         contentBase: path.resolve(__dirname, 'src')
     },
-
     devtool: prodMode ? 'source-map' : 'eval-source-map'
 };
+
+if (prodMode) {
+    config.plugins.push(new UglifyJsWebpackPlugin());
+}
 
 module.exports = config;
