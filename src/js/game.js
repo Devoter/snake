@@ -58,10 +58,12 @@ export default class Game {
         this._foodPrerenderedCell = null;
         this._snakePrerenderedCell = null;
         this._shouldRedrawDisplay = false;
+        this._animationTimer = null;
 
         this.nextIteration = this.nextIteration.bind(this);
         this._onKeyUp = this._onKeyUp.bind(this);
         this.redrawDisplay = this.redrawDisplay.bind(this);
+        this.render = this.render.bind(this);
         this._availableKeys = [37, 38, 39, 40, 65, 87, 68, 83];
 
         this._bindButtons();
@@ -170,6 +172,7 @@ export default class Game {
             }
             ctx.drawImage(cell, table[i].x * width, table[i].y * height);
         }
+        this._animationTimer = requestAnimationFrame(this.render);
     }
 
     run(restart = false, levelUp = false) {
@@ -194,7 +197,6 @@ export default class Game {
         this.render();
         let rabbit = new Rabbit(this._foodLifeTime);
         this._field.addItem(rabbit);
-        this.render();
         if (!restart)
             this._bindEvents();
 
@@ -213,6 +215,10 @@ export default class Game {
     }
 
     reset(levelUp = false) {
+        if (this._animationTimer) {
+            cancelAnimationFrame(this._animationTimer);
+            this._animationTimer = null;
+        }
         this._field.clear();
         this._shouldGenerateFood = false;
         this._speedIterationsCount = this._baseSpeedIterationsCount;
@@ -301,7 +307,6 @@ export default class Game {
             this._field.addItem(rabbit);
         }
 
-        this.render();
         this._iterationTimer = setTimeout(this.nextIteration, this._timeout());
     }
 
