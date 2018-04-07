@@ -2,10 +2,12 @@ import Rabbit from './rabbit';
 import Wall from './wall';
 import Snake from './snake';
 import Field from './field';
+import Adapter from './adapter';
 
 export default class Game {
-    constructor(levels = null, sizeX = 10, sizeY = 20, baseSpeed = 300, speedFactor = 10, speedIterationsCount = 25,
-                foodLifeTime = 25, foodFactor = 1, inputQueueLimit = 4, cellRenderer = null) {
+    constructor(host, port, levels = null, sizeX = 10, sizeY = 20, baseSpeed = 300, speedFactor = 10,
+                speedIterationsCount = 25, foodLifeTime = 25, foodFactor = 1, inputQueueLimit = 4,
+                cellRenderer = null) {
         this._field = new Field(sizeX, sizeY);
         this._elements = {
             display: document.getElementById('snake-display'),
@@ -27,6 +29,7 @@ export default class Game {
             downButton: document.getElementById('snake-down')
         };
 
+        this._adapter = new Adapter(host, port);
         this._sizeX = sizeX;
         this._sizeY = sizeY;
         this._snake = null;
