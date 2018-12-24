@@ -1,0 +1,9 @@
+.side-panel {
+  &__button-block {
+    margin-bottom: 2vh;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}

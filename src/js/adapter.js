@@ -1,4 +1,4 @@
-import {sha256} from 'js-sha256';
+import encrypt from './encrypt';
 
 export default class Adapter {
     constructor(host, port) {
@@ -6,12 +6,7 @@ export default class Adapter {
     }
 
     async saveScore(name, score) {
-        let checksum = sha256(name + score);
-        for (let i = 0; i < 1000; ++i)
-            checksum = sha256(checksum);
-
-        const data = new FormData();
-        data.append('json', JSON.stringify({name: name, score: score, hash: checksum}));
+        const data = JSON.stringify({name: name, score: score, hash: encrypt(name, score)});
         let scoreTable;
         try {
             const response = await fetch(this._hostUrl, {
@@ -22,7 +17,7 @@ export default class Adapter {
                     'Content-Type': 'application/json'
                 }
             });
-            scoreTable = response.json();
+            scoreTable = await response.json();
         }
         catch (reason) {
             console.log('Could not save score by the reason', reason);

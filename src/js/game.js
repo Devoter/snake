@@ -5,7 +5,7 @@ import Field from './field';
 import Adapter from './adapter';
 
 export default class Game {
-    constructor(host, port, levels = null, sizeX = 10, sizeY = 20, baseSpeed = 300, speedFactor = 10,
+    constructor(host, port, nameMaxLength = 10, levels = null, sizeX = 10, sizeY = 20, baseSpeed = 300, speedFactor = 10,
                 speedIterationsCount = 25, foodLifeTime = 25, foodFactor = 1, inputQueueLimit = 4,
                 cellRenderer = null) {
         this._field = new Field(sizeX, sizeY);
@@ -18,6 +18,7 @@ export default class Game {
             gameOver: document.getElementById('game-over'),
             help: document.getElementById('help'),
             pause: document.getElementById('pause'),
+            scoreTable: document.getElementById('score-table'),
             colorsEnableButton: document.getElementById('snake-colors-enable'),
             vibrationEnableButton: document.getElementById('snake-vibration-enable'),
             helpButton: document.getElementById('snake-help'),
@@ -26,8 +27,14 @@ export default class Game {
             leftButton: document.getElementById('snake-left'),
             upButton: document.getElementById('snake-up'),
             rightButton: document.getElementById('snake-right'),
-            downButton: document.getElementById('snake-down')
+            downButton: document.getElementById('snake-down'),
+            scoreTableButton: document.getElementById('snake-show-score-table'),
+            scoreTablePageUpButton: document.getElementById('snake-score-table-page-up'),
+            scoreTablePageDownButton: document.getElementById('snake-score-table-page-down'),
+            nameField: document.getElementById('name-field')
         };
+
+        this._elements.nameFieldInput = this._elements.nameField.querySelector('.name-field__input');
 
         this._adapter = new Adapter(host, port);
         this._sizeX = sizeX;
@@ -62,14 +69,24 @@ export default class Game {
         this._snakePrerenderedCell = null;
         this._shouldRedrawDisplay = false;
         this._animationTimer = null;
+        this._showScoreTable = false;
+        this._nameMaxLength = nameMaxLength;
+        this.name = '';
+        this._nameFieldMode = false;
+        this._keyboard = [];
+        this._keyboardActive = null;
+        this._keyboardActiveIndex = -1;
 
         this.nextIteration = this.nextIteration.bind(this);
         this._onKeyUp = this._onKeyUp.bind(this);
         this.redrawDisplay = this.redrawDisplay.bind(this);
         this.render = this.render.bind(this);
+        this._tableScorePageUp = this._tableScorePageUp.bind(this);
+        this._tableScorePageDown = this._tableScorePageDown.bind(this);
         this._availableKeys = [37, 38, 39, 40, 65, 87, 68, 83];
 
         this._bindButtons();
+        this._initKeyboard();
     }
 
     get highScore() {
@@ -100,6 +117,14 @@ export default class Game {
         return this._vibrationEnable;
     }
 
+    get name() {
+        return this._name;
+    }
+
+    get nameFieldMode() {
+        return this._nameFieldMode;
+    }
+
     set highScore(value) {
         this._highScore = value;
         this._elements.highScore.innerHTML = value;
@@ -124,7 +149,14 @@ export default class Game {
 
     set gameOver(value) {
         this._gameOver = !!value;
-        this._elements.gameOver.innerHTML = value ? 'GAME<br>OVER' : '';
+        if (this._gameOver) {
+            this._elements.gameOver.innerHTML = 'GAME<br>OVER';
+            this.nameFieldMode = true;
+        }
+        else {
+            this._elements.gameOver.innerHTML = '';
+            this.nameFieldMode = false;
+        }
     }
 
     set colorsEnable(value) {
@@ -140,14 +172,35 @@ export default class Game {
         localStorage.setItem('snakeVibrationEnable', this._vibrationEnable);
     }
 
+    set name(value) {
+        if (value.length > this._nameMaxLength) return;
+        this._name = value;
+        this._elements.nameFieldInput.innerHTML = this._name.padEnd(this._nameMaxLength, '_');
+    }
+
+    set cellRenderer(renderer) {
+        if (typeof(renderer) === 'function')
+            this._cellRenderer = renderer;
+    }
+
+    set nameFieldMode(state) {
+        if (state && this.score > 0) {
+            this._nameFieldMode = true;
+            this.name = '';
+
+            this._setActiveButton(0);
+            this._elements.nameField.classList.remove('name-field_hidden');
+
+            return;
+        }
+
+        this._nameFieldMode = false;
+        this._elements.nameField.classList.add('name-field_hidden');
+    }
+
     destroy() {
         this.stop();
         this.clearFieldLayout();
-    }
-
-    setCellRenderer(renderer) {
-        if (typeof(renderer) === 'function')
-            this._cellRenderer = renderer;
     }
 
     render() {
@@ -394,8 +447,38 @@ export default class Game {
     }
 
     _onKeyUp(event) {
-        if (event.keyCode === 82 || event.keyCode === 13) { // 'r' or ENTER: restart
-            if (this._showHelp || this._pause)
+        if (this.nameFieldMode) {
+            if (event.keyCode === 27) // ESC: cancel
+                this.nameFieldMode = false;
+            else if (event.keyCode === 13) { // ENTER: send score
+                if (this.name.length)
+                    this._sendScore();
+            }
+            else if (event.keyCode === 32) // SPACE: apply symbol
+                this._applyKeyboardSymbol();
+            else if (event.keyCode === 38) // UP: move cursor up
+                this._moveKeyboardCursor(0);
+            else if (event.keyCode === 40) // DOWN: move cursor down
+                this._moveKeyboardCursor(1);
+            else if (event.keyCode === 37) // LEFT: move cursor left
+                this._moveKeyboardCursor(2);
+            else if (event.keyCode === 39) // RIGHT: move cursor right
+                this._moveKeyboardCursor(3);
+            else if (event.keyCode === 8) // BACKSPACE: remove last character
+                this._keyboard[this._keyboard.length - 2].click();
+            else if (event.keyCode >= 0x41 && event.keyCode < 0x5b) { // A-Z
+                const symbol = this._keyboard.find(sym => sym.innerHTML.charCodeAt(0) === event.keyCode);
+                if (symbol)
+                    symbol.click();
+            }
+            else if (['_', '.', '-', '\'', '"'].includes(event.key)) { // other characters
+                const symbol = this._keyboard.find(sym => sym.innerHTML.charAt(0) === event.key);
+                if (symbol)
+                    symbol.click();
+            }
+        }
+        else if (event.keyCode === 82 || event.keyCode === 13) { // 'r' or ENTER: restart
+            if (this._showHelp || this._pause || this._showScoreTable)
                 return;
 
             if (this._iterationTimer) {
@@ -406,11 +489,13 @@ export default class Game {
             }
         }
         else if (event.keyCode === 80 || event.keyCode === 32) { // 'p' or SPACE: pause
-            if (!this._showHelp)
+            if (!this._showHelp && !this._showScoreTable)
                 this._togglePause();
             return;
         }
         else if (event.keyCode === 72 || event.keyCode === 27) { // 'h' or ESC: help
+            if (this._showScoreTable)
+                return;
             this._showHelp = !this._showHelp;
 
             this._elements.help.className = 'help' + (this._showHelp ? '' : ' help_hidden');
@@ -422,6 +507,21 @@ export default class Game {
             this.colorsEnable = !this.colorsEnable;
         else if (event.keyCode === 86) // 'v': vibration
             this.vibrationEnable = !this.vibrationEnable;
+        else if (event.keyCode === 84) { // 't': score table
+            if (this._showHelp)
+                return;
+
+            this._showScoreTable = !this._showScoreTable;
+            this._toggleScoreTable();
+        }
+        else if (event.keyCode === 33) { // page up
+            if (this._showScoreTable)
+                this._tableScorePageUp();
+        }
+        else if (event.keyCode === 34) { // page down
+            if (this._showScoreTable)
+                this._tableScorePageDown();
+        }
         this.addInput(event.keyCode);
     }
 
@@ -451,11 +551,11 @@ export default class Game {
     }
 
     _bindButtons() {
-        let vibrationClick = func => function () {
+        const vibrationClick = func => () => {
             func();
             if (this.vibrationEnable)
                 navigator.vibrate(35);
-        }.bind(this);
+        };
 
         this._elements.pauseButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 32})));
         this._elements.resetButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 13})));
@@ -464,6 +564,7 @@ export default class Game {
         this._elements.rightButton.addEventListener('click', vibrationClick(() => this.addInput(39)));
         this._elements.downButton.addEventListener('click', vibrationClick(() => this.addInput(40)));
         this._elements.helpButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 27})));
+        this._elements.scoreTableButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 84})));
         this._elements.colorsEnableButton.addEventListener('click',
             vibrationClick(() => this.colorsEnable = !this.colorsEnable));
         this._elements.vibrationEnableButton.addEventListener('click',
@@ -475,5 +576,164 @@ export default class Game {
         this._field.clearPreviousTable();
         this.createFieldLayout();
         this.render();
+    }
+
+    async _toggleScoreTable(table = null) {
+        if (!this._pause)
+            this._togglePause(true);
+
+        if (this._showScoreTable) {
+            let scoreTable;
+            if (table)
+                scoreTable = table;
+            else {
+                try {
+                    scoreTable = await this._adapter.updateScoreTable();
+                }
+                catch (reason) {
+                    scoreTable = null;
+                }
+            }
+            const scoreTableElement = this._elements.scoreTable.getElementsByClassName('score-table__table')[0];
+            scoreTableElement.style.top = '0';
+            if (scoreTable) {
+                let table = '<tr><th class="score-table__table-header_left">#</th>' +
+                    '<th class="score-table__table-header_left">NAME</th>' +
+                    '<th class="score-table__table-header_right">SCORE</th></tr>';
+                for (let i = 0; i < scoreTable.length; ++i) {
+                    const item = scoreTable[i];
+                    table += `<tr class="score-table__item ${item.you ? 'score-table__item_active' : ''}">` +
+                        `<td class="score-table__item-text">${Number(i + 1)}</td>` +
+                        `<td class="score-table__item-text">${item.name}</td>` +
+                        `<td class="score-table__item-score">${item.score}</td>` +
+                        '</tr>';
+                }
+                scoreTableElement.innerHTML = table;
+            }
+            else
+                scoreTableElement.innerHTML = '<tr><th>UNAVAILABLE</th></tr>';
+            this._elements.scoreTable.className = 'score-table';
+            this._elements.scoreTableButton.className = 'push-button push-button_small push-button_active';
+            this._elements.scoreTablePageUpButton.addEventListener('click', this._tableScorePageUp);
+            this._elements.scoreTablePageDownButton.addEventListener('click', this._tableScorePageDown);
+        }
+        else {
+            this._elements.scoreTable.className = 'score-table score-table_hidden';
+            this._elements.scoreTableButton.className = 'push-button push-button_small';
+            this._elements.scoreTablePageUpButton.removeEventListener('click', this._tableScorePageUp);
+            this._elements.scoreTablePageDownButton.removeEventListener('click', this._tableScorePageDown);
+        }
+    }
+
+    _tableScorePageUp() {
+        const scoreTableElement = this._elements.scoreTable.getElementsByClassName('score-table__table')[0];
+        if (scoreTableElement.parentElement.clientHeight > scoreTableElement.clientHeight)
+            return;
+
+        const next = ((scoreTableElement.style.top ? parseInt(scoreTableElement.style.top) : 0) + 4);
+        scoreTableElement.style.top = Math.min(next, 0) + 'vh';
+    }
+
+    _tableScorePageDown() {
+        const scoreTableElement = this._elements.scoreTable.getElementsByClassName('score-table__table')[0];
+        if (scoreTableElement.parentElement.clientHeight > scoreTableElement.clientHeight)
+            return;
+
+        const next = ((scoreTableElement.style.top ? parseInt(scoreTableElement.style.top) : 0) - 4);
+        const vh = document.documentElement.clientHeight / 100;
+
+        if (next * vh + scoreTableElement.clientHeight > (scoreTableElement.parentElement.clientHeight - 6 * vh))
+            scoreTableElement.style.top = next + 'vh';
+    }
+
+    _initKeyboard() {
+        const nameField = this._elements.nameField;
+        const keyboard = nameField.querySelector('.name-field__keyboard');
+
+        const createSymbol = (value, fromCode = true) => {
+            const sym = document.createElement('div');
+
+            sym.innerHTML = fromCode ? String.fromCharCode(value) : value;
+            sym.classList.add('name-field__symbol');
+            keyboard.appendChild(sym);
+            const index = this._keyboard.length;
+            this._keyboard.push(sym);
+
+            return [sym, index];
+        };
+
+        for (let i = 0x41; i < 0x5b; ++i) {
+            const [literal, index] = createSymbol(i);
+            literal.addEventListener('click', () => {
+                this.name += String.fromCharCode(i);
+                this._setActiveButton(index);
+            });
+        }
+        ['_', '.', '-', '\'', '"'].forEach(value => {
+            const [symbol, index] = createSymbol(value, false);
+            symbol.addEventListener('click', () => {
+                this.name += value;
+                this._setActiveButton(index);
+            });
+        });
+
+        const [backspace, index] = createSymbol(0x2190);
+        backspace.addEventListener('click', () => {
+            this.name = this._name.slice(0, this._name.length - 1);
+            this._setActiveButton(index);
+        });
+
+        const done = nameField.querySelector('.name-field__symbol_done');
+        done.addEventListener('click', this._sendScore.bind(this));
+        this._keyboard.push(done);
+    }
+
+    async _sendScore() {
+        this._setActiveButton(this._keyboard.length - 1);
+        const scoreTable = await this._adapter.saveScore(this.name, this.score);
+        if (scoreTable) {
+            this._showScoreTable = true;
+            this._toggleScoreTable(scoreTable);
+        }
+        this.nameFieldMode = false;
+    }
+
+    _moveKeyboardCursor(direction) {
+        const index = this._keyboardActiveIndex;
+        const len = this._keyboard.length;
+
+        if (index === -1) {
+            this._setActiveButton(0);
+            return;
+        }
+
+        switch (direction) {
+            case 0: // up
+                this._setActiveButton(Math.max((Math.floor(index / 8) - 1) * 8 + (index % 8), 0));
+                break;
+            case 1: // down
+                this._setActiveButton(Math.min((Math.floor(index / 8) + 1) * 8 + (index % 8), len - 1));
+                break;
+            case 2: // left
+                this._setActiveButton(Math.max(index - 1, 0));
+                break;
+            case 3: // right
+                this._setActiveButton(Math.max(index + 1, 0));
+                break;
+        }
+    }
+
+    _applyKeyboardSymbol() {
+        if (this._keyboardActive)
+            this._keyboardActive.click();
+    }
+
+    _setActiveButton(index) {
+        const board = this._keyboard;
+        for (let i = 0; i < board.length; ++i)
+            board[i].classList.remove('name-field__symbol_active');
+        board[index].classList.add('name-field__symbol_active');
+        this._keyboardActive = board[index];
+        this._keyboardActiveIndex = index;
     }
 }

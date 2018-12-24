@@ -5,11 +5,11 @@ const UglifyJsWebpackPlugin = require("uglifyjs-webpack-plugin");
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
-// const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+
 
 const prodMode = process.env.NODE_ENV === 'production';
-
-let config = {
+const config = {
     context: path.resolve(__dirname, 'src'),
     entry: {
         snake: './js/main.js'
@@ -99,7 +99,12 @@ let config = {
         new CleanWebpackPlugin(['dist']),
         new HtmlWebpackPlugin({template: './index.html'}),
         new ExtractTextPlugin('style.css'),
-        // new CopyWebpackPlugin([]),
+        new CopyWebpackPlugin([
+            {
+                from: 'img',
+                to: 'img'
+            }
+        ]),
     ],
     devServer: {
         contentBase: path.resolve(__dirname, 'src')
