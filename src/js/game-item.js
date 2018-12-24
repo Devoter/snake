@@ -1,7 +1,5 @@
 export default class GameItem {
-    constructor() {
-        this._connected = false;
-    }
+    _connected = false;
 
     get isFood() {
         return false;

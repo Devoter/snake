@@ -1,12 +1,9 @@
 import GameItem from './game-item';
 
 export default class Wall extends GameItem {
-    constructor() {
-        super();
-        this._points = [];
-        this._start = [-1, -1];
-        this._end = [-1, -1];
-    }
+    _points = [];
+    _start = [-1, -1];
+    _end = [-1, -1];
 
     get points() {
         return this._points;

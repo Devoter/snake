@@ -5,6 +5,45 @@ import Field from './field';
 import Adapter from './adapter';
 
 export default class Game {
+    _field = null;
+    _elements = null;
+    _adapter = null;
+    _sizeX = 0;
+    _sizeY = 0;
+    _snake = null;
+    _input = [];
+    _iterationTimer = null;
+    _level = -1;
+    _speed = 0;
+    _speedFactor = 0;
+    _score = 0;
+    _levelScore = 0;
+    _showHelp = false;
+    _baseSpeed = 0;
+    _baseSpeedIterationsCount = 0;
+    _speedIterationsCount = 0;
+    _shouldGenerateFood = false;
+    _foodLifeTime = 0;
+    _foodFactor = 0;
+    _pause = false;
+    _inputQueueLimit = 0;
+    _levels = null;
+    _cellRenderer = null;
+    _activePrerenderedCell = null;
+    _inactivePrerenderedCell = null;
+    _foodPrerenderedCell = null;
+    _snakePrerenderedCell = null;
+    _shouldRedrawDisplay = false;
+    _animationTimer = null;
+    _showScoreTable = false;
+    _nameMaxLength = 0;
+    _name = '';
+    _nameFieldMode = false;
+    _keyboard = [];
+    _keyboardActive = null;
+    _keyboardActiveIndex = -1;
+    _availableKeys = [37, 38, 39, 40, 65, 87, 68, 83];
+
     constructor(host, port, nameMaxLength = 10, levels = null, sizeX = 10, sizeY = 20, baseSpeed = 300, speedFactor = 10,
                 speedIterationsCount = 25, foodLifeTime = 25, foodFactor = 1, inputQueueLimit = 4,
                 cellRenderer = null) {
@@ -39,43 +78,22 @@ export default class Game {
         this._adapter = new Adapter(host, port);
         this._sizeX = sizeX;
         this._sizeY = sizeY;
-        this._snake = null;
-        this._input = [];
-        this._iterationTimer = null;
-        this._level = -1;
-        this._speed = 0;
         this._speedFactor = speedFactor;
         this.highScore = Number(localStorage.getItem('snakeHighScore'));
         let colorsEnable = localStorage.getItem('snakeColorsEnable');
         this.colorsEnable = colorsEnable === null ? false : (colorsEnable === 'true');
         let vibrationEnable = localStorage.getItem('snakeVibrationEnable');
         this.vibrationEnable = vibrationEnable === null ? true : (vibrationEnable === 'true');
-        this._score = 0;
-        this._levelScore = 0;
-        this._showHelp = false;
         this._baseSpeed = baseSpeed;
         this._baseSpeedIterationsCount = speedIterationsCount;
         this._speedIterationsCount = speedIterationsCount;
-        this._shouldGenerateFood = false;
         this._foodLifeTime = foodLifeTime;
         this._foodFactor = foodFactor;
-        this._pause = false;
         this._inputQueueLimit = inputQueueLimit;
         this._levels = levels;
         this._cellRenderer = cellRenderer;
-        this._activePrerenderedCell = null;
-        this._inactivePrerenderedCell = null;
-        this._foodPrerenderedCell = null;
-        this._snakePrerenderedCell = null;
-        this._shouldRedrawDisplay = false;
-        this._animationTimer = null;
-        this._showScoreTable = false;
         this._nameMaxLength = nameMaxLength;
         this.name = '';
-        this._nameFieldMode = false;
-        this._keyboard = [];
-        this._keyboardActive = null;
-        this._keyboardActiveIndex = -1;
 
         this.nextIteration = this.nextIteration.bind(this);
         this._onKeyUp = this._onKeyUp.bind(this);
@@ -83,7 +101,6 @@ export default class Game {
         this.render = this.render.bind(this);
         this._tableScorePageUp = this._tableScorePageUp.bind(this);
         this._tableScorePageDown = this._tableScorePageDown.bind(this);
-        this._availableKeys = [37, 38, 39, 40, 65, 87, 68, 83];
 
         this._bindButtons();
         this._initKeyboard();

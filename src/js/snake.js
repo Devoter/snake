@@ -1,12 +1,9 @@
 import GameItem from './game-item';
 
 export default class Snake extends GameItem {
-    constructor() {
-        super();
-        this._points = [];
-        this._grow = false;
-        this._angle = 0;
-    }
+    _points = [];
+    _grow = false;
+    _angle = 0;
 
     get points() {
         return this._points;

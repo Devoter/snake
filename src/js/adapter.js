@@ -1,6 +1,12 @@
 import encrypt from './encrypt';
 
 export default class Adapter {
+    /**
+     * @property {string}
+     * @private
+     */
+    _hostUrl;
+
     constructor(host, port) {
         this._hostUrl = host + ':' + port + '/';
     }
