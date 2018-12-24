@@ -1,6 +1,9 @@
 import Food from './food';
 
 export default class Rabbit extends Food {
+    _x = 0;
+    _y = 0;
+
     constructor(lifeTime = 20, x = -1, y = -1) {
         super(lifeTime);
         this._x = x;

@@ -2,13 +2,17 @@ import GameItem from './game-item';
 import Snake from './snake';
 
 export default class Field {
+    _sizeX = 0;
+    _sizeY = 0;
+    _items = [];
+    _count = 0;
+    _maxCount = 0;
+    _previousTable = null;
+
     constructor(sizeX, sizeY) {
         this._sizeX = sizeX;
         this._sizeY = sizeY;
-        this._items = [];
-        this._count = 0;
         this._maxCount = this._sizeX * this._sizeY;
-        this._previousTable = null;
     }
 
     get items() {

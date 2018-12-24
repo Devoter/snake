@@ -1,51 +1,40 @@
 /* eslint-env node */
-
 const path = require('path');
-const UglifyJsWebpackPlugin = require("uglifyjs-webpack-plugin");
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const webpack = require('webpack'); //to access built-in plugins
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-// const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const MinifyPlugin = require('babel-minify-webpack-plugin');
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
-const prodMode = process.env.NODE_ENV === 'production';
 
-let config = {
-    context: path.resolve(__dirname, 'src'),
+const devMode = process.env.NODE_ENV !== 'production';
+
+module.exports = {
+    mode: devMode ? 'development' : 'production',
     entry: {
-        snake: './js/main.js'
+        snake: './src/js/main.js'
     },
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: '[name].js'
+        filename: '[name].[chunkhash].js'
     },
     module: {
         rules: [
             {
                 test: /\.js$/,
-                exclude: /node_modules/,
                 use: [
-                    {
-                        loader: 'eslint-loader',
-                        options: prodMode ? {minimize: true} : {}
-                    }
+                    'babel-loader',
+                    'eslint-loader'
                 ]
             },
             {
                 test: /\.scss$/,
-                use: ExtractTextPlugin.extract({
-                    fallback: 'style-loader',
-                    use: [
-                        {
-                            loader: 'css-loader',
-                            options: prodMode ? {minimize: true} : {}
-                        },
-                        'sass-loader'
-                    ]
-                })
-            },
-            {
-                test: /\.css$/,
-                loader: 'css-loader'
+                use: [
+                    devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
+                    'css-loader',
+                    'sass-loader'
+                ]
             },
             {
                 test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
@@ -65,50 +54,21 @@ let config = {
                 test: /\.html$/,
                 loader: 'html-loader'
             }
-        ],
-        loaders: [
-            {
-                test: /\.html$/,
-                loader: ['file-loader', 'html-loader']
-            },
-            {
-                test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
-                loader: ['file-loader'],
-                options: {
-                    name: 'img/[name].[ext]'
-                }
-            },
-            {
-                test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
-                loader: ['file-loader'],
-                options: {
-                    name: 'fonts/[name].[ext]'
-                }
-            },
-            {
-                test: /\.css$/,
-                loader: 'css-loader'
-            },
-            {
-                test: /\.scss$/,
-                loader: 'css-loader!sass-loader',
-            }
         ]
     },
     plugins: [
-        new CleanWebpackPlugin(['dist']),
-        new HtmlWebpackPlugin({template: './index.html'}),
-        new ExtractTextPlugin('style.css'),
-        // new CopyWebpackPlugin([]),
+        new webpack.ProgressPlugin(),
+        new CleanWebpackPlugin(['./dist']),
+        new HtmlWebpackPlugin({template: './src/index.html'}),
+        new MiniCssExtractPlugin({
+            filename: devMode ? '[name].css' : '[name].[hash].css',
+            chunkFilename: devMode ? '[id].css' : '[id].[hash].css',
+        }),
+        new MinifyPlugin()
     ],
-    devServer: {
-        contentBase: path.resolve(__dirname, 'src')
+    optimization: {
+        minimizer: [
+            new OptimizeCSSAssetsPlugin({})
+        ]
     },
-    devtool: prodMode ? 'source-map' : 'eval-source-map'
 };
-
-if (prodMode) {
-    config.plugins.push(new UglifyJsWebpackPlugin());
-}
-
-module.exports = config;

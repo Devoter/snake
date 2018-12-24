@@ -1,0 +1,75 @@
+.name-field {
+  --height: 60vh;
+  border: 0.5vh solid;
+  background-color: #6d775c;
+  padding: 1vh 1.2vh;
+  position: absolute;
+  font-size: 3.5vh;
+  left: 0;
+  top: 0;
+  width: calc(var(--height) * 0.5);
+  height: var(--height);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+
+  &__header {
+    font-size: 1em;
+    text-align: center;
+    padding-top: 1vh;
+    padding-bottom: 2vh;
+  }
+
+  &__content {
+    flex-grow: 1;
+    font-size: 0.4em;
+    font-family: monospace;
+    padding: 0 0 1vh 0;
+    white-space: pre;
+    line-height: 0.7;
+    overflow: hidden;
+  }
+
+  &__input {
+    font-size: 2.2em;
+    font-family: monospace;
+  }
+
+  &__keyboard {
+    border: 0;
+    font-size: 2.2em;
+    font-family: monospace;
+    position: relative;
+    display: grid;
+    grid-auto-rows: auto;
+    grid-gap: 0.5vh;
+    grid-template-columns: repeat(8, 1fr);
+  }
+
+  &__done {
+    display: flex;
+    justify-content: center;
+  }
+
+  &__symbol {
+    border: 0.25vh solid transparent;
+    padding: 0.25vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    &_active {
+      border-color: #222222;
+    }
+
+    &_done {
+      font-size: 2.2em;
+    }
+  }
+
+  &_hidden {
+    display: none;
+  }
+}
