@@ -22,9 +22,10 @@ export default class Game {
     _baseSpeed = 0;
     _baseSpeedIterationsCount = 0;
     _speedIterationsCount = 0;
-    _shouldGenerateFood = false;
+    _shouldGenerateFood = 0;
     _foodLifeTime = 0;
     _foodFactor = 0;
+    _rabbitsCount = 0;
     _pause = false;
     _inputQueueLimit = 0;
     _levels = null;
@@ -42,10 +43,19 @@ export default class Game {
     _keyboard = [];
     _keyboardActive = null;
     _keyboardActiveIndex = -1;
-    _availableKeys = [37, 38, 39, 40, 65, 87, 68, 83];
+    _availableKeys = [
+        37, // ARROW LEFT
+        38, // ARROW UP
+        39, // ARROW RIGHT
+        40, // ARROW DOWN
+        65, // A
+        87, // W
+        68, // D
+        83  // S
+    ];
 
-    constructor(host, port, nameMaxLength = 10, levels = null, sizeX = 10, sizeY = 20, baseSpeed = 300, speedFactor = 10,
-                speedIterationsCount = 25, foodLifeTime = 25, foodFactor = 1, inputQueueLimit = 4,
+    constructor(host, port, nameMaxLength = 10, levels = null, sizeX = 10, sizeY = 20, baseSpeed = 300, speedFactor = 6,
+                speedIterationsCount = 25, foodLifeTime = 25, foodFactor = 1, rabbitsCount = 1, inputQueueLimit = 4,
                 cellRenderer = null) {
         this._field = new Field(sizeX, sizeY);
         this._elements = {
@@ -79,6 +89,7 @@ export default class Game {
         this._sizeX = sizeX;
         this._sizeY = sizeY;
         this._speedFactor = speedFactor;
+        this._rabbitsCount = rabbitsCount;
         this.highScore = Number(localStorage.getItem('snakeHighScore'));
         let colorsEnable = localStorage.getItem('snakeColorsEnable');
         this.colorsEnable = colorsEnable === null ? false : (colorsEnable === 'true');
@@ -178,14 +189,20 @@ export default class Game {
 
     set colorsEnable(value) {
         this._colorsEnable = !!value;
-        this._elements.colorsEnableButton.className = 'push-button push-button_small' + (value ? ' push-button_active' : '');
+        if (value)
+            this._elements.colorsEnableButton.classList.add('push-button_active');
+        else
+            this._elements.colorsEnableButton.classList.remove('push-button_active');
         localStorage.setItem('snakeColorsEnable', this._colorsEnable);
         this.redrawDisplay();
     }
 
     set vibrationEnable(value) {
         this._vibrationEnable = !!value;
-        this._elements.vibrationEnableButton.className = 'push-button push-button_small' + (value ? ' push-button_active' : '');
+        if (value)
+            this._elements.vibrationEnableButton.classList.add('push-button_active');
+        else
+            this._elements.vibrationEnableButton.classList.remove('push-button_active');
         localStorage.setItem('snakeVibrationEnable', this._vibrationEnable);
     }
 
@@ -245,7 +262,6 @@ export default class Game {
             }
             ctx.drawImage(cell, table[i].x * width, table[i].y * height);
         }
-        this._animationTimer = requestAnimationFrame(this.render);
     }
 
     run(restart = false, levelUp = false) {
@@ -268,8 +284,10 @@ export default class Game {
         this._snake.init(start, end);
         this._field.addItem(this._snake);
         this.render();
-        let rabbit = new Rabbit(this._foodLifeTime);
-        this._field.addItem(rabbit);
+        for (let i = 0; i < this._rabbitsCount; ++i) {
+            const rabbit = new Rabbit(this._foodLifeTime);
+            this._field.addItem(rabbit);
+        }
         if (!restart)
             this._bindEvents();
 
@@ -293,7 +311,7 @@ export default class Game {
             this._animationTimer = null;
         }
         this._field.clear();
-        this._shouldGenerateFood = false;
+        this._shouldGenerateFood = 0;
         this._speedIterationsCount = this._baseSpeedIterationsCount;
         if (!levelUp) {
             this.score = 0;
@@ -308,6 +326,8 @@ export default class Game {
     nextIteration() {
         if (this._shouldRedrawDisplay)
             this._redrawDisplay();
+        else
+            this._animationTimer = requestAnimationFrame(this.render);
 
         --this._speedIterationsCount;
         if (!this._speedIterationsCount) {
@@ -315,16 +335,22 @@ export default class Game {
             this._speedIterationsCount = this._baseSpeedIterationsCount;
         }
 
-        let moved = true;
+        const items = this._field.items;
+        let moved = 1;
         let keyPressed = true;
+        let food = [];
 
-        let food = this._field.items.filter(item => item.isFood);
-        food.forEach(item => {
-            if (item.lifeTime > 0)
-                --item.lifeTime;
-        });
+        for (let i = 0; i < items.length; ++i) {
+            const item = items[i];
 
-        let lastKey = this._input.shift();
+            if (item.isFood) {
+                food.push(item);
+                if (item.lifeTime > 0)
+                    --item.lifeTime;
+            }
+        }
+
+        const lastKey = this._input.shift();
 
         switch (lastKey) {
             case 87: // W
@@ -360,35 +386,31 @@ export default class Game {
         }
 
         if (moved === 2) {
-            let itemsToRemove = food.filter(item => item.eaten);
+            for (let i = 0; i < food.length; ++i) {
+                const item = food[i];
 
-            itemsToRemove.forEach(item => {
-                this._incrementLevelScore(Math.max(1, item.lifeTime * this._foodFactor));
-                this._field.removeItem(item);
-            });
+                if (item.eaten) {
+                    this._incrementLevelScore(Math.max(1, item.lifeTime * this._foodFactor));
+                    this._field.removeItem(item);
+                    ++this._shouldGenerateFood;
+                }
+            }
+
             if (this._levelScore >= this._levels[this.level % this._levels.length].score) {
                 this.run(false, true);
                 return;
             }
             this._snake.grow();
-            this._shouldGenerateFood = true;
+
         }
 
-        if (this._shouldGenerateFood) {
-            this._shouldGenerateFood = false;
-            let rabbit = new Rabbit(this._foodLifeTime);
+        for (let i = 0; i < this._shouldGenerateFood; ++i) {
+            const rabbit = new Rabbit(this._foodLifeTime);
             this._field.addItem(rabbit);
         }
+        this._shouldGenerateFood = 0;
 
         this._iterationTimer = setTimeout(this.nextIteration, this._timeout());
-    }
-
-    addInput(keyCode) {
-        const input = this._input;
-        const len = input.length;
-
-        if (this._availableKeys.includes(keyCode) && len < this._inputQueueLimit && (!len || input[len - 1] !== keyCode))
-            input.push(keyCode);
     }
 
     createFieldLayout() {
@@ -448,7 +470,7 @@ export default class Game {
             const item = level.items[i];
 
             if (item.type === 'wall') {
-                let wall = new Wall();
+                const wall = new Wall();
                 wall.start = item.start;
                 wall.end = item.end;
                 this._field.addItem(wall);
@@ -464,27 +486,29 @@ export default class Game {
     }
 
     _onKeyUp(event) {
+        const keyCode = event.keyCode;
+
         if (this.nameFieldMode) {
-            if (event.keyCode === 27) // ESC: cancel
+            if (keyCode === 27) // ESC: cancel
                 this.nameFieldMode = false;
-            else if (event.keyCode === 13) { // ENTER: send score
+            else if (keyCode === 13) { // ENTER: send score
                 if (this.name.length)
                     this._sendScore();
             }
-            else if (event.keyCode === 32) // SPACE: apply symbol
+            else if (keyCode === 32) // SPACE: apply symbol
                 this._applyKeyboardSymbol();
-            else if (event.keyCode === 38) // UP: move cursor up
+            else if (keyCode === 38) // UP: move cursor up
                 this._moveKeyboardCursor(0);
-            else if (event.keyCode === 40) // DOWN: move cursor down
+            else if (keyCode === 40) // DOWN: move cursor down
                 this._moveKeyboardCursor(1);
-            else if (event.keyCode === 37) // LEFT: move cursor left
+            else if (keyCode === 37) // LEFT: move cursor left
                 this._moveKeyboardCursor(2);
-            else if (event.keyCode === 39) // RIGHT: move cursor right
+            else if (keyCode === 39) // RIGHT: move cursor right
                 this._moveKeyboardCursor(3);
-            else if (event.keyCode === 8) // BACKSPACE: remove last character
+            else if (keyCode === 8) // BACKSPACE: remove last character
                 this._keyboard[this._keyboard.length - 2].click();
-            else if (event.keyCode >= 0x41 && event.keyCode < 0x5b) { // A-Z
-                const symbol = this._keyboard.find(sym => sym.innerHTML.charCodeAt(0) === event.keyCode);
+            else if (keyCode >= 0x41 && keyCode < 0x5b) { // A-Z
+                const symbol = this._keyboard.find(sym => sym.innerHTML.charCodeAt(0) === keyCode);
                 if (symbol)
                     symbol.click();
             }
@@ -494,7 +518,7 @@ export default class Game {
                     symbol.click();
             }
         }
-        else if (event.keyCode === 82 || event.keyCode === 13) { // 'r' or ENTER: restart
+        else if (keyCode === 82 || keyCode === 13) { // 'r' or ENTER: restart
             if (this._showHelp || this._pause || this._showScoreTable)
                 return;
 
@@ -505,41 +529,53 @@ export default class Game {
                 return;
             }
         }
-        else if (event.keyCode === 80 || event.keyCode === 32) { // 'p' or SPACE: pause
+        else if (keyCode === 80 || keyCode === 32) { // 'p' or SPACE: pause
             if (!this._showHelp && !this._showScoreTable)
                 this._togglePause();
             return;
         }
-        else if (event.keyCode === 72 || event.keyCode === 27) { // 'h' or ESC: help
+        else if (keyCode === 72 || keyCode === 27) { // 'h' or ESC: help
             if (this._showScoreTable)
                 return;
             this._showHelp = !this._showHelp;
 
-            this._elements.help.className = 'help' + (this._showHelp ? '' : ' help_hidden');
-            this._elements.helpButton.className = 'push-button push-button_small' + (this._showHelp ? ' push-button_active' : '');
+            if (this._showHelp) {
+                this._elements.help.classList.remove('help_hidden');
+                this._elements.helpButton.classList.add('push-button_active');
+            }
+            else {
+                this._elements.help.classList.add('help_hidden');
+                this._elements.helpButton.classList.remove('push-button_active');
+            }
+
             if (!this._pause)
                 this._togglePause(true);
         }
-        else if (event.keyCode === 67) // 'c': colors
+        else if (keyCode === 67) // 'c': colors
             this.colorsEnable = !this.colorsEnable;
-        else if (event.keyCode === 86) // 'v': vibration
+        else if (keyCode === 86) // 'v': vibration
             this.vibrationEnable = !this.vibrationEnable;
-        else if (event.keyCode === 84) { // 't': score table
+        else if (keyCode === 84) { // 't': score table
             if (this._showHelp)
                 return;
 
             this._showScoreTable = !this._showScoreTable;
             this._toggleScoreTable();
         }
-        else if (event.keyCode === 33) { // page up
+        else if (keyCode === 33) { // page up
             if (this._showScoreTable)
                 this._tableScorePageUp();
         }
-        else if (event.keyCode === 34) { // page down
+        else if (keyCode === 34) { // page down
             if (this._showScoreTable)
                 this._tableScorePageDown();
         }
-        this.addInput(event.keyCode);
+
+        const input = this._input;
+        const len = input.length;
+
+        if (this._availableKeys.includes(keyCode) && len < this._inputQueueLimit && (!len || input[len - 1] !== keyCode))
+            input.push(keyCode);
     }
 
     _togglePause(ignoreFlag = false) {
@@ -550,14 +586,14 @@ export default class Game {
             clearTimeout(this._iterationTimer);
             this._iterationTimer = null;
             this._elements.pause.innerHTML = 'PAUSE';
-            this._elements.pauseButton.className = 'push-button push-button_big push-button_active';
+            this._elements.pauseButton.classList.add('push-button_active');
             if (!ignoreFlag)
                 this._pause = true;
         }
         else {
             this._iterationTimer = setTimeout(this.nextIteration, this._timeout());
             this._elements.pause.innerHTML = '';
-            this._elements.pauseButton.className = 'push-button push-button_big';
+            this._elements.pauseButton.classList.remove('push-button_active');
             if (!ignoreFlag)
                 this._pause = false;
         }
@@ -576,10 +612,10 @@ export default class Game {
 
         this._elements.pauseButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 32})));
         this._elements.resetButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 13})));
-        this._elements.leftButton.addEventListener('click', vibrationClick(() => this.addInput(37)));
-        this._elements.upButton.addEventListener('click', vibrationClick(() => this.addInput(38)));
-        this._elements.rightButton.addEventListener('click', vibrationClick(() => this.addInput(39)));
-        this._elements.downButton.addEventListener('click', vibrationClick(() => this.addInput(40)));
+        this._elements.leftButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 37})));
+        this._elements.upButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 38})));
+        this._elements.rightButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 39})));
+        this._elements.downButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 40})));
         this._elements.helpButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 27})));
         this._elements.scoreTableButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 84})));
         this._elements.colorsEnableButton.addEventListener('click',
@@ -611,7 +647,7 @@ export default class Game {
                     scoreTable = null;
                 }
             }
-            const scoreTableElement = this._elements.scoreTable.getElementsByClassName('score-table__table')[0];
+            const scoreTableElement = this._elements.scoreTable.querySelector('.score-table__table');
             scoreTableElement.style.top = '0';
             if (scoreTable) {
                 let table = '<tr><th class="score-table__table-header_left">#</th>' +
@@ -629,21 +665,22 @@ export default class Game {
             }
             else
                 scoreTableElement.innerHTML = '<tr><th>UNAVAILABLE</th></tr>';
-            this._elements.scoreTable.className = 'score-table';
-            this._elements.scoreTableButton.className = 'push-button push-button_small push-button_active';
+
+            this._elements.scoreTable.classList.remove('score-table_hidden');
+            this._elements.scoreTableButton.classList.add('push-button_active');
             this._elements.scoreTablePageUpButton.addEventListener('click', this._tableScorePageUp);
             this._elements.scoreTablePageDownButton.addEventListener('click', this._tableScorePageDown);
         }
         else {
-            this._elements.scoreTable.className = 'score-table score-table_hidden';
-            this._elements.scoreTableButton.className = 'push-button push-button_small';
+            this._elements.scoreTable.classList.add('score-table_hidden');
+            this._elements.scoreTableButton.classList.remove('push-button_active');
             this._elements.scoreTablePageUpButton.removeEventListener('click', this._tableScorePageUp);
             this._elements.scoreTablePageDownButton.removeEventListener('click', this._tableScorePageDown);
         }
     }
 
     _tableScorePageUp() {
-        const scoreTableElement = this._elements.scoreTable.getElementsByClassName('score-table__table')[0];
+        const scoreTableElement = this._elements.scoreTable.querySelector('.score-table__table');
         if (scoreTableElement.parentElement.clientHeight > scoreTableElement.clientHeight)
             return;
 
@@ -652,7 +689,7 @@ export default class Game {
     }
 
     _tableScorePageDown() {
-        const scoreTableElement = this._elements.scoreTable.getElementsByClassName('score-table__table')[0];
+        const scoreTableElement = this._elements.scoreTable.querySelector('.score-table__table');
         if (scoreTableElement.parentElement.clientHeight > scoreTableElement.clientHeight)
             return;
 

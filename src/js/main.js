@@ -5,7 +5,7 @@ import levels from './levels';
 import config from './config';
 
 document.addEventListener('DOMContentLoaded', function () {
-    const game = new Game(config.host, config.port, config.nameMaxLength, levels);
+    const game = new Game(config.host, config.port, config.nameMaxLength, levels, 10, 20, 300, 6, 25, 25, 1, 2, 4);
     game.cellRenderer = cellRenderer;
     if (game.createFieldLayout())
         game.run(false, true);

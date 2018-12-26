@@ -20,18 +20,18 @@ export default class Field {
     }
 
     table() {
-        let tableDiff = [];
-        let t = new Array(this._maxCount).fill(0);
+        const tableDiff = [];
+        const t = new Array(this._maxCount).fill(0);
         const sizeX = this._sizeX;
         const sizeY = this._sizeY;
 
         if (this._previousTable) {
             for (let i = 0; i < this._items.length; ++i) {
-                let item = this._items[i];
-                let points = item.points;
+                const item = this._items[i];
+                const points = item.points;
                 for (let j = 0; j < points.length; ++j) {
-                    let point = points[j];
-                    let index = sizeX * point[1] + point[0];
+                    const point = points[j];
+                    const index = sizeX * point[1] + point[0];
                     if (item.isFood)
                         t[index] = (item.lifeTime < 6 && item.lifeTime % 2 !== 0) ? 0 : 1;
                     else if (item instanceof Snake)
@@ -42,8 +42,8 @@ export default class Field {
             }
             for (let x = 0; x < sizeX; ++x) {
                 for (let y = 0; y < sizeY; ++y) {
-                    let i = sizeX * y + x;
-                    let value = t[i];
+                    const i = sizeX * y + x;
+                    const value = t[i];
                     if (this._previousTable[i] !== value)
                         tableDiff.push({x: x, y: y, value: value});
                 }
@@ -51,10 +51,10 @@ export default class Field {
         }
         else {
             for (let i = 0; i < this._items.length; ++i) {
-                let item = this._items[i];
-                let points = item.points;
+                const item = this._items[i];
+                const points = item.points;
                 for (let j = 0; j < points.length; ++j) {
-                    let point = points[j];
+                    const point = points[j];
                     let draw;
                     if (item.isFood)
                         draw = (item.lifeTime < 6 && item.lifeTime % 2 !== 0) ? 0 : 1;
@@ -101,7 +101,7 @@ export default class Field {
     }
 
     removeItem(item) {
-        let index = this._items.findIndex(i => i === item);
+        const index = this._items.findIndex(i => i === item);
         if (index === -1)
             return;
 
@@ -119,7 +119,7 @@ export default class Field {
             return null;
 
         const t = this._previousTable;
-        let cells = [];
+        const cells = [];
         for (let i = 0; i < t.length; ++i) {
             if (!t[i])
                 cells.push(i);
