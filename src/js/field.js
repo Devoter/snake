@@ -1,5 +1,5 @@
-import GameItem from './game-item';
-import Snake from './snake';
+import GameItem from './game-items/game-item';
+import Snake from './game-items/snake';
 
 export default class Field {
     _sizeX = 0;
@@ -33,7 +33,7 @@ export default class Field {
                     const point = points[j];
                     const index = sizeX * point[1] + point[0];
                     if (item.isFood)
-                        t[index] = (item.lifeTime < 6 && item.lifeTime % 2 !== 0) ? 0 : 1;
+                        t[index] = (item.lifeTime < 6 && item.lifeTime % 2 !== 0) ? 4 : 1;
                     else if (item instanceof Snake)
                         t[index] = 2;
                     else
@@ -57,7 +57,7 @@ export default class Field {
                     const point = points[j];
                     let draw;
                     if (item.isFood)
-                        draw = (item.lifeTime < 6 && item.lifeTime % 2 !== 0) ? 0 : 1;
+                        draw = (item.lifeTime < 6 && item.lifeTime % 2 !== 0) ? 4 : 1;
                     else if (item instanceof Snake)
                         draw = 2;
                     else

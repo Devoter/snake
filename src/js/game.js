@@ -1,6 +1,7 @@
-import Rabbit from './rabbit';
-import Wall from './wall';
-import Snake from './snake';
+import Rabbit from './game-items/rabbit';
+import Wall from './game-items/wall';
+import Barrier from './game-items/barrier';
+import Snake from './game-items/snake';
 import Field from './field';
 import Adapter from './adapter';
 
@@ -249,6 +250,7 @@ export default class Game {
             let cell;
             switch (table[i].value) {
                 case 0:
+                case 4:
                     cell = this._inactivePrerenderedCell;
                     break;
                 case 1:
@@ -259,6 +261,7 @@ export default class Game {
                     break;
                 case 3:
                     cell = this._activePrerenderedCell;
+                    break;
             }
             ctx.drawImage(cell, table[i].x * width, table[i].y * height);
         }
@@ -284,7 +287,7 @@ export default class Game {
         this._snake.init(start, end);
         this._field.addItem(this._snake);
         this.render();
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 800));
         this._input.splice(0,this._input.length);
         for (let i = 0; i < this._rabbitsCount; ++i) {
             const rabbit = new Rabbit(this._foodLifeTime);
@@ -340,10 +343,13 @@ export default class Game {
         const items = this._field.items;
         let moved = 1;
         let keyPressed = true;
-        let food = [];
+        const food = [];
 
         for (let i = 0; i < items.length; ++i) {
             const item = items[i];
+
+            if (item.movable && item !== this._snake)
+                item.moveNext(this._field);
 
             if (item.isFood) {
                 if (item.lifeTime > 0) {
@@ -481,6 +487,13 @@ export default class Game {
                 wall.start = item.start;
                 wall.end = item.end;
                 this._field.addItem(wall);
+            }
+            else if (item.type === 'barrier') {
+                const barrier = new Barrier();
+                barrier.start = item.start;
+                barrier.end = item.end;
+                barrier.pattern = item.pattern;
+                this._field.addItem(barrier);
             }
         }
 

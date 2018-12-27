@@ -9,6 +9,10 @@ export default class Wall extends GameItem {
         return this._points;
     }
 
+    get space() {
+        return this._points;
+    }
+
     get start() {
         return this._start;
     }
@@ -28,12 +32,11 @@ export default class Wall extends GameItem {
     }
 
     initialized() {
-        return this._points.length > 1;
+        return this._points.length;
     }
 
-    place(field) {
-        if (!this._connected && this.initialized() && !field.items.some(item => item.points.some(point =>
-                this._points.some(p => point[0] === p[0] && point[1] === p[1])))) {
+    place(field) { // eslint-disable-line no-unused-vars
+        if (!this._connected && this.initialized()) {
             this._connected = true;
             return true;
         }
@@ -50,8 +53,7 @@ export default class Wall extends GameItem {
             return;
         }
 
-        let points = [];
-
+        const points = [];
 
         for (let x = Math.min(start[0], end[0]); x <= Math.max(start[0], end[0]); ++x) {
             for (let y = Math.min(start[1], end[1]); y <= Math.max(start[1], end[1]); ++y)

@@ -1,6 +1,8 @@
+import mix from '../utils/mix';
 import GameItem from './game-item';
+import MovableMixin from './movable-mixin';
 
-export default class Snake extends GameItem {
+export default class Snake extends mix(GameItem).with(MovableMixin) {
     _points = [];
     _grow = false;
     _angle = 0;
@@ -41,11 +43,14 @@ export default class Snake extends GameItem {
         if (!condition(newHead, field.sizeX, field.sizeY))
             moved = 0;
         else {
+            const newBody = this._points.slice(1, this._points.length);
+
             for (let i = 0; i < field.items.length && moved === 1; ++i) {
                 const item = field.items[i];
                 const points = item.points;
 
                 for (let j = 0; j < points.length; ++j) {
+
                     if (points[j][0] === newHead[0] && points[j][1] === newHead[1]) {
                         if (item === this && j === points.length - 2)
                             moved = 3;
@@ -56,6 +61,17 @@ export default class Snake extends GameItem {
                         else
                             moved = 0;
                         break;
+                    }
+                    else if (item !== this) {
+                        for (let k = 0; k < newBody.length; ++k) {
+                            if (points[j][0] === newBody[k][0] && points[j][1] === newBody[k][1]) {
+                                moved = 0;
+                                break;
+                            }
+                        }
+
+                        if (moved === 0)
+                            break;
                     }
                 }
             }
