@@ -11,7 +11,7 @@ const MovableMixin = superclass => class extends superclass {
      * @return {number}
      */
     moveNext(field) { // eslint-disable-line no-unused-vars
-        return 1;
+        throw new Error('Method is not implemented');
     }
 };
 
