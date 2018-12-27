@@ -264,7 +264,7 @@ export default class Game {
         }
     }
 
-    run(restart = false, levelUp = false) {
+    async run(restart = false, levelUp = false) {
         this.reset(levelUp);
         this.gameOver = false;
         this._speedIterationsCount = this._baseSpeedIterationsCount;
@@ -284,6 +284,8 @@ export default class Game {
         this._snake.init(start, end);
         this._field.addItem(this._snake);
         this.render();
+        await new Promise(resolve => setTimeout(resolve, 500));
+        this._input.splice(0,this._input.length);
         for (let i = 0; i < this._rabbitsCount; ++i) {
             const rabbit = new Rabbit(this._foodLifeTime);
             this._field.addItem(rabbit);
@@ -344,9 +346,14 @@ export default class Game {
             const item = items[i];
 
             if (item.isFood) {
-                food.push(item);
-                if (item.lifeTime > 0)
+                if (item.lifeTime > 0) {
                     --item.lifeTime;
+                    food.push(item);
+                }
+                else {
+                    this._field.removeItem(item);
+                    ++this._shouldGenerateFood;
+                }
             }
         }
 
