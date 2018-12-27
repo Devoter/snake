@@ -1,6 +1,8 @@
+import mix from '../utils/mix';
 import GameItem from './game-item';
+import MovableMixin from './movable-mixin';
 
-export default class Snake extends GameItem {
+export default class Snake extends mix(GameItem).with(MovableMixin) {
     _points = [];
     _grow = false;
     _angle = 0;
@@ -35,17 +37,20 @@ export default class Snake extends GameItem {
     }
 
     move(field, condition, deltaX = 0, deltaY = 0) {
-        let head = this._points[this._points.length - 1];
-        let newHead = [head[0] + deltaX, head[1] + deltaY];
+        const head = this._points[this._points.length - 1];
+        const newHead = [head[0] + deltaX, head[1] + deltaY];
         let moved = 1;
         if (!condition(newHead, field.sizeX, field.sizeY))
             moved = 0;
         else {
+            const newBody = this._points.slice(1, this._points.length);
+
             for (let i = 0; i < field.items.length && moved === 1; ++i) {
-                let item = field.items[i];
-                let points = item.points;
+                const item = field.items[i];
+                const points = item.points;
 
                 for (let j = 0; j < points.length; ++j) {
+
                     if (points[j][0] === newHead[0] && points[j][1] === newHead[1]) {
                         if (item === this && j === points.length - 2)
                             moved = 3;
@@ -56,6 +61,17 @@ export default class Snake extends GameItem {
                         else
                             moved = 0;
                         break;
+                    }
+                    else if (item !== this) {
+                        for (let k = 0; k < newBody.length; ++k) {
+                            if (points[j][0] === newBody[k][0] && points[j][1] === newBody[k][1]) {
+                                moved = 0;
+                                break;
+                            }
+                        }
+
+                        if (moved === 0)
+                            break;
                     }
                 }
             }
@@ -87,7 +103,7 @@ export default class Snake extends GameItem {
     }
 
     moveLeft(field) {
-        let moved = this.move(field, head => head[0] >= 0, -1);
+        const moved = this.move(field, head => head[0] >= 0, -1);
         if (moved === 3)
             return this.moveNext(field);
 
@@ -96,7 +112,7 @@ export default class Snake extends GameItem {
     }
 
     moveRight(field) {
-        let moved = this.move(field, (head, sizeX) => head[0] < sizeX, 1);
+        const moved = this.move(field, (head, sizeX) => head[0] < sizeX, 1);
         if (moved === 3)
             return this.moveNext(field);
 
@@ -105,7 +121,7 @@ export default class Snake extends GameItem {
     }
 
     moveUp(field) {
-        let moved = this.move(field, head => head[1] >= 0, 0, -1);
+        const moved = this.move(field, head => head[1] >= 0, 0, -1);
         if (moved === 3)
             return this.moveNext(field);
 
@@ -114,7 +130,7 @@ export default class Snake extends GameItem {
     }
 
     moveDown(field) {
-        let moved = this.move(field, (head, sizeX, sizeY) => head[1] < sizeY, 0, 1);
+        const moved = this.move(field, (head, sizeX, sizeY) => head[1] < sizeY, 0, 1);
         if (moved === 3)
             return this.moveNext(field);
 
@@ -129,7 +145,7 @@ export default class Snake extends GameItem {
     place(field) {
         if (!this.initialized())
             return false;
-        let placed = !field.items.some(item => item.points.some(point =>
+        const placed = !field.items.some(item => item.points.some(point =>
             this._points.some(p => p[0] === point[0] && p[1] === point[1])));
 
         if (placed)

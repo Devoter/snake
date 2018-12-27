@@ -45,7 +45,7 @@ export default class Rabbit extends Food {
         if (!cells)
             return false;
 
-        let i = cells[Math.floor(Math.random() * cells.length)];
+        const i = cells[Math.floor(Math.random() * cells.length)];
         this.y = Math.floor(i / field.sizeX);
         this.x = i % field.sizeX;
 
