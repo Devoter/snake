@@ -73,6 +73,7 @@ export default class Game {
             vibrationEnableButton: document.getElementById('snake-vibration-enable'),
             helpButton: document.getElementById('snake-help'),
             pauseButton: document.getElementById('snake-pause'),
+            repoLinkButton: document.querySelector('#snake-github-link'),
             resetButton: document.getElementById('snake-reset'),
             leftButton: document.getElementById('snake-left'),
             upButton: document.getElementById('snake-up'),
@@ -590,6 +591,13 @@ export default class Game {
             if (this._showScoreTable)
                 this._tableScorePageDown();
         }
+        else if (keyCode === 71) {// 'g': github link
+            if (!this._showHelp && !this._showScoreTable)
+                this._togglePause();
+
+            window.open(REPO_LINK, '_blank');
+            return;
+        }
 
         const input = this._input;
         const len = input.length;
@@ -642,6 +650,7 @@ export default class Game {
             vibrationClick(() => this.colorsEnable = !this.colorsEnable));
         this._elements.vibrationEnableButton.addEventListener('click',
             vibrationClick(() => this.vibrationEnable = !this.vibrationEnable));
+        this._elements.repoLinkButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 71})));
     }
 
     _redrawDisplay() {
