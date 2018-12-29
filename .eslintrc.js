@@ -17,5 +17,8 @@ module.exports = {
             "always"
         ],
         "no-console": 0
+    },
+    globals: {
+        'REPO_LINK': true
     }
 };

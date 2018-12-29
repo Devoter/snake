@@ -7,6 +7,8 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const MinifyPlugin = require('babel-minify-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
+const { repository } = require('./package');
+
 
 const devMode = process.env.NODE_ENV !== 'production';
 
@@ -58,6 +60,7 @@ module.exports = {
     },
     plugins: [
         new webpack.ProgressPlugin(),
+        new webpack.DefinePlugin({ 'REPO_LINK': JSON.stringify(repository) }),
         new CleanWebpackPlugin(['./dist']),
         new HtmlWebpackPlugin({template: './src/index.html'}),
         new MiniCssExtractPlugin({

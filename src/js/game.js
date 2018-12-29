@@ -74,6 +74,7 @@ export default class Game {
             vibrationEnableButton: document.getElementById('snake-vibration-enable'),
             helpButton: document.getElementById('snake-help'),
             pauseButton: document.getElementById('snake-pause'),
+            repoLinkButton: document.querySelector('#snake-github-link'),
             resetButton: document.getElementById('snake-reset'),
             leftButton: document.getElementById('snake-left'),
             upButton: document.getElementById('snake-up'),
@@ -608,6 +609,13 @@ export default class Game {
             if (this._showScoreTable)
                 this._tableScorePageDown();
         }
+        else if (keyCode === 71) {// 'g': github link
+            if (!this._pause && !this._showHelp && !this._showScoreTable)
+                this._togglePause();
+
+            window.open(REPO_LINK, '_blank');
+            return;
+        }
 
         const input = this._input;
         const len = input.length;
@@ -651,18 +659,20 @@ export default class Game {
                 navigator.vibrate(35);
         };
 
-        this._elements.pauseButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 32})));
-        this._elements.resetButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 13})));
-        this._elements.leftButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 37})));
-        this._elements.upButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 38})));
-        this._elements.rightButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 39})));
-        this._elements.downButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 40})));
-        this._elements.helpButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 27})));
-        this._elements.scoreTableButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 84})));
-        this._elements.colorsEnableButton.addEventListener('click',
-            vibrationClick(() => this.colorsEnable = !this.colorsEnable));
-        this._elements.vibrationEnableButton.addEventListener('click',
+        const elements = this._elements;
+
+        elements.pauseButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 32})));
+        elements.resetButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 13})));
+        elements.leftButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 37})));
+        elements.upButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 38})));
+        elements.rightButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 39})));
+        elements.downButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 40})));
+        elements.helpButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 27})));
+        elements.scoreTableButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 84})));
+        elements.colorsEnableButton.addEventListener('click', vibrationClick(() => this.colorsEnable = !this.colorsEnable));
+        elements.vibrationEnableButton.addEventListener('click',
             vibrationClick(() => this.vibrationEnable = !this.vibrationEnable));
+        elements.repoLinkButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 71})));
     }
 
     _redrawDisplay() {
@@ -675,6 +685,8 @@ export default class Game {
     async _toggleScoreTable(table = null) {
         if (!this._pause)
             this._togglePause(true);
+
+        const elements = this._elements;
 
         if (this._showScoreTable) {
             let scoreTable;
@@ -707,16 +719,16 @@ export default class Game {
             else
                 scoreTableElement.innerHTML = '<tr><th>UNAVAILABLE</th></tr>';
 
-            this._elements.scoreTable.classList.remove('score-table_hidden');
-            this._elements.scoreTableButton.classList.add('push-button_active');
-            this._elements.scoreTablePageUpButton.addEventListener('click', this._tableScorePageUp);
-            this._elements.scoreTablePageDownButton.addEventListener('click', this._tableScorePageDown);
+            elements.scoreTable.classList.remove('score-table_hidden');
+            elements.scoreTableButton.classList.add('push-button_active');
+            elements.scoreTablePageUpButton.addEventListener('click', this._tableScorePageUp);
+            elements.scoreTablePageDownButton.addEventListener('click', this._tableScorePageDown);
         }
         else {
-            this._elements.scoreTable.classList.add('score-table_hidden');
-            this._elements.scoreTableButton.classList.remove('push-button_active');
-            this._elements.scoreTablePageUpButton.removeEventListener('click', this._tableScorePageUp);
-            this._elements.scoreTablePageDownButton.removeEventListener('click', this._tableScorePageDown);
+            elements.scoreTable.classList.add('score-table_hidden');
+            elements.scoreTableButton.classList.remove('push-button_active');
+            elements.scoreTablePageUpButton.removeEventListener('click', this._tableScorePageUp);
+            elements.scoreTablePageDownButton.removeEventListener('click', this._tableScorePageDown);
         }
     }
 
