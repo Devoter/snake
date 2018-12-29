@@ -36,33 +36,52 @@ export default class Snake extends mix(GameItem).with(MovableMixin) {
         this._grow = true;
     }
 
-    move(field, condition, deltaX = 0, deltaY = 0) {
+    move(field, condition, boost = false, deltaX = 0, deltaY = 0) {
         const head = this._points[this._points.length - 1];
-        const newHead = [head[0] + deltaX, head[1] + deltaY];
+        const boostUp = boost ? 2 : 1;
+        const newHead = [];
         let moved = 1;
-        if (!condition(newHead, field.sizeX, field.sizeY))
+
+        if (boost) { // calculating a long head
+            if (deltaX)
+                for (let i = deltaX; i !== deltaX * boostUp; i += deltaX)
+                    newHead.push([head[0] + i, head[1]]);
+            else
+                for (let i = deltaY; i !== deltaY * boostUp; i += deltaY)
+                    newHead.push([head[0], head[1] + i]);
+        }
+        newHead.push([head[0] + deltaX * boostUp, head[1] + deltaY * boostUp]);
+
+        if (!condition(newHead[newHead.length - 1], field.sizeX, field.sizeY))
             moved = 0;
         else {
-            const newBody = this._points.slice(1, this._points.length);
+            const newBody = this._points.slice(this._grow ? (boostUp - 1) : boostUp, this._points.length);
 
             for (let i = 0; i < field.items.length && moved === 1; ++i) {
                 const item = field.items[i];
                 const points = item.points;
 
                 for (let j = 0; j < points.length; ++j) {
+                    let alreadyMoved = false;
+                    for (let k = 0; k < newHead.length; ++k) {
+                        if (points[j][0] === newHead[k][0] && points[j][1] === newHead[k][1]) {
+                            if (item === this && j === points.length - 2)
+                                moved = 3;
+                            else if (item.isFood) {
+                                moved = 2;
+                                item.eaten = true;
+                            }
+                            else
+                                moved = 0;
 
-                    if (points[j][0] === newHead[0] && points[j][1] === newHead[1]) {
-                        if (item === this && j === points.length - 2)
-                            moved = 3;
-                        else if (item.isFood) {
-                            moved = 2;
-                            item.eaten = true;
+                            alreadyMoved = true;
+                            break;
                         }
-                        else
-                            moved = 0;
-                        break;
                     }
-                    else if (item !== this) {
+                    if (alreadyMoved)
+                        break;
+
+                    if (item !== this) {
                         for (let k = 0; k < newBody.length; ++k) {
                             if (points[j][0] === newBody[k][0] && points[j][1] === newBody[k][1]) {
                                 moved = 0;
@@ -78,32 +97,34 @@ export default class Snake extends mix(GameItem).with(MovableMixin) {
         }
 
         if (moved && moved !== 3) {
-            if (this._grow)
+            if (this._grow) {
                 this._grow = false;
+                this._points.splice(0, boostUp - 1);
+            }
             else
-                this._points.splice(0, 1);
-            this._points.push(newHead);
+                this._points.splice(0, boostUp);
+            this._points = this._points.concat(newHead);
         }
 
         return moved;
     }
 
-    moveNext(field) {
+    moveNext(field, boost) {
         switch (this._angle) {
             case 0:
-                return this.moveLeft(field);
+                return this.moveLeft(field, boost);
             case 1:
-                return this.moveUp(field);
+                return this.moveUp(field, boost);
             case 2:
-                return this.moveRight(field);
+                return this.moveRight(field, boost);
             case 3:
-                return this.moveDown(field);
+                return this.moveDown(field, boost);
         }
         return 1;
     }
 
-    moveLeft(field) {
-        const moved = this.move(field, head => head[0] >= 0, -1);
+    moveLeft(field, boost) {
+        const moved = this.move(field, head => head[0] >= 0, boost , -1);
         if (moved === 3)
             return this.moveNext(field);
 
@@ -111,8 +132,8 @@ export default class Snake extends mix(GameItem).with(MovableMixin) {
         return moved;
     }
 
-    moveRight(field) {
-        const moved = this.move(field, (head, sizeX) => head[0] < sizeX, 1);
+    moveRight(field, boost) {
+        const moved = this.move(field, (head, sizeX) => head[0] < sizeX, boost, 1);
         if (moved === 3)
             return this.moveNext(field);
 
@@ -120,8 +141,8 @@ export default class Snake extends mix(GameItem).with(MovableMixin) {
         return moved;
     }
 
-    moveUp(field) {
-        const moved = this.move(field, head => head[1] >= 0, 0, -1);
+    moveUp(field, boost) {
+        const moved = this.move(field, head => head[1] >= 0, boost, 0, -1);
         if (moved === 3)
             return this.moveNext(field);
 
@@ -129,8 +150,8 @@ export default class Snake extends mix(GameItem).with(MovableMixin) {
         return moved;
     }
 
-    moveDown(field) {
-        const moved = this.move(field, (head, sizeX, sizeY) => head[1] < sizeY, 0, 1);
+    moveDown(field, boost) {
+        const moved = this.move(field, (head, sizeX, sizeY) => head[1] < sizeY, boost, 0, 1);
         if (moved === 3)
             return this.moveNext(field);
 
