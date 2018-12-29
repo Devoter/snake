@@ -28,6 +28,7 @@ export default class Game {
     _foodFactor = 0;
     _rabbitsCount = 0;
     _pause = false;
+    _boost = false;
     _inputQueueLimit = 0;
     _levels = null;
     _cellRenderer = null;
@@ -78,6 +79,7 @@ export default class Game {
             upButton: document.getElementById('snake-up'),
             rightButton: document.getElementById('snake-right'),
             downButton: document.getElementById('snake-down'),
+            throwButton: document.getElementById('snake-throw'),
             scoreTableButton: document.getElementById('snake-show-score-table'),
             scoreTablePageUpButton: document.getElementById('snake-score-table-page-up'),
             scoreTablePageDownButton: document.getElementById('snake-score-table-page-down'),
@@ -109,6 +111,7 @@ export default class Game {
 
         this.nextIteration = this.nextIteration.bind(this);
         this._onKeyUp = this._onKeyUp.bind(this);
+        this._onKeyDown = this._onKeyDown.bind(this);
         this.redrawDisplay = this.redrawDisplay.bind(this);
         this.render = this.render.bind(this);
         this._tableScorePageUp = this._tableScorePageUp.bind(this);
@@ -274,6 +277,7 @@ export default class Game {
         this._snake = new Snake();
 
         this._levelScore = 0;
+        this._boost = false;
         let start, end;
 
         if (levelUp || restart)
@@ -364,23 +368,24 @@ export default class Game {
         }
 
         const lastKey = this._input.shift();
+        const boost = this._boost;
 
         switch (lastKey) {
             case 87: // W
             case 38: // UP
-                moved = this._snake.moveUp(this._field);
+                moved = this._snake.moveUp(this._field, boost);
                 break;
             case 83: // S
             case 40: // DOWN
-                moved = this._snake.moveDown(this._field);
+                moved = this._snake.moveDown(this._field, boost);
                 break;
             case 65: // A
             case 37: // LEFT
-                moved = this._snake.moveLeft(this._field);
+                moved = this._snake.moveLeft(this._field, boost);
                 break;
             case 68: // D
             case 39: // RIGHT
-                moved = this._snake.moveRight(this._field);
+                moved = this._snake.moveRight(this._field, boost);
                 break;
             default:
                 keyPressed = false;
@@ -388,11 +393,11 @@ export default class Game {
         }
 
         if (!keyPressed)
-            moved = this._snake.moveNext(this._field);
+            moved = this._snake.moveNext(this._field, boost);
 
         if (!moved) {
             this.gameOver = true;
-            let highScore = Number(localStorage.getItem('snakeHighScore'));
+            const highScore = Number(localStorage.getItem('snakeHighScore'));
             this.highScore = Math.max(highScore, this.highScore);
             localStorage.setItem('snakeHighScore', this.highScore);
             return;
@@ -501,12 +506,25 @@ export default class Game {
     }
 
     _bindEvents() {
+        window.addEventListener('keydown', this._onKeyDown);
         window.addEventListener('keyup', this._onKeyUp);
         window.addEventListener('resize', this.redrawDisplay);
     }
 
+    _onKeyDown(event) { // eslint-disable-line no-unused-vars
+        const keyCode = event.keyCode;
+
+        if (this.gameOver) return;
+
+        if (keyCode === 32) // SPACE: boost
+            this._boost = true;
+    }
+
     _onKeyUp(event) {
         const keyCode = event.keyCode;
+
+        if (keyCode === 32 && this._boost) // SPACE: throw
+            this._boost = false;
 
         if (this.nameFieldMode) {
             if (keyCode === 27) // ESC: cancel
@@ -549,12 +567,12 @@ export default class Game {
                 return;
             }
         }
-        else if (keyCode === 80 || keyCode === 32) { // 'p' or SPACE: pause
+        else if (keyCode === 80 || keyCode === 27) { // 'p' or ESC: pause
             if (!this._showHelp && !this._showScoreTable)
                 this._togglePause();
             return;
         }
-        else if (keyCode === 72 || keyCode === 27) { // 'h' or ESC: help
+        else if (keyCode === 72) { // 'h': help
             if (this._showScoreTable)
                 return;
             this._showHelp = !this._showHelp;
@@ -624,7 +642,10 @@ export default class Game {
     }
 
     _bindButtons() {
-        const vibrationClick = func => () => {
+        const vibrationClick = func => event => {
+            if (event && event.target)
+                event.target.blur();
+
             func();
             if (this.vibrationEnable)
                 navigator.vibrate(35);
