@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<link href="snake.ea97be49f98af28cb5cf.css" rel="stylesheet"></head>
+<link href="snake.1ca668f8d1b122ccbc26.css" rel="stylesheet"></head>
 <body>
     <div class="container" id="container">
         <div class="top-part">
@@ -20,6 +20,16 @@
                     <span class="button-block__label">table</span>
                     <br>
                     <button class="push-button push-button_small" id="snake-show-score-table"></button>
+                </div>
+                <div class="button-block side-panel__button-block">
+                    <span class="button-block__label">colors</span>
+                    <br>
+                    <button class="push-button push-button_small" id="snake-colors-enable"></button>
+                </div>
+                <div class="button-block side-panel__button-block">
+                    <span class="button-block__label">github</span>
+                    <br>
+                    <button class="push-button push-button_small" id="snake-github-link"></button>
                 </div>
             </div>
             <div class="display" id="display">
@@ -59,12 +69,19 @@ W, ARROW UP    - Move up<br>
 S, ARROW DOWN  - Move down<br>
 A, ARROW LEFT  - Move left<br>
 D, ARROW RIGHT - Move right<br>
-P, SPACE       - Pause<br>
+   SPACE       - Throw<br>
+P, ESC         - Pause<br>
 R, ENTER       - Restart<br>
-H, ESC         - Show this text<br>
+H              - Show this text<br>
 C              - Color mode<br>
 V              - Vibration<br>
-T              - Score table
+T              - Score table<br>
+                    </div>
+                    <header class="help__header">RELEASE</header>
+                    <div class="help__content">
+VERSION        - <span class="help__version"></span><br>
+COPYLEFT       - <span class="help__copyleft"></span><br>
+LICENSE        - MIT
                     </div>
                 </div>
 
@@ -120,16 +137,16 @@ T              - Score table
                         </div>
 
                         <div class="button-block">
-                            <span class="button-block__label">colors</span>
+                            <span class="button-block__label">pause</span>
                             <br>
-                            <button class="push-button push-button_small" id="snake-colors-enable"></button>
+                            <button class="push-button push-button_small" id="snake-pause"></button>
                         </div>
                     </div>
 
-                    <button class="push-button push-button_big" id="snake-pause">PAUSE</button>
+                    <button class="push-button push-button_big" id="snake-throw">THROW</button>
                 </div>
             </div>
         </div>
     </div>
-<script type="text/javascript" src="snake.523f559ec1457b96f533.js"></script></body>
+<script type="text/javascript" src="snake.012d623bc15235ce3f10.js"></script></body>
 </html>
