@@ -55,6 +55,7 @@ export default class Game {
         68, // D
         83  // S
     ];
+    _keyPressed = null;
 
     constructor(host, port, nameMaxLength = 10, levels = null, sizeX = 10, sizeY = 20, baseSpeed = 300, speedFactor = 6,
                 speedIterationsCount = 25, foodLifeTime = 25, foodFactor = 1, rabbitsCount = 1, inputQueueLimit = 4,
@@ -519,14 +520,14 @@ export default class Game {
 
         if (this.gameOver) return;
 
-        if (keyCode === 32) // SPACE: boost
+        if (keyCode === 32 || keyCode === 1032) // SPACE or 'THROW' button: boost
             this._boost = true;
     }
 
     _onKeyUp(event) {
         const keyCode = event.keyCode;
 
-        if (keyCode === 32 && this._boost) // SPACE: throw
+        if ((keyCode === 32 || keyCode === 1032) && this._boost) // SPACE: throw
             this._boost = false;
 
         if (this.nameFieldMode) {
@@ -536,7 +537,7 @@ export default class Game {
                 if (this.name.length)
                     this._sendScore();
             }
-            else if (keyCode === 32) // SPACE: apply symbol
+            else if (keyCode === 32 || keyCode === 1032) // SPACE or 'THROW' button: apply symbol
                 this._applyKeyboardSymbol();
             else if (keyCode === 38) // UP: move cursor up
                 this._moveKeyboardCursor(0);
@@ -652,29 +653,65 @@ export default class Game {
     }
 
     _bindButtons() {
-        const vibrationClick = func => event => {
+        const keyDown = keyCode => event => {
             if (event && event.target)
                 event.target.blur();
 
-            func();
+            if (this._keyPressed && this._keyPressed.keyCode === keyCode)
+                return;
+            this._keyPressed = {keyCode};
             if (this.vibrationEnable)
                 navigator.vibrate(35);
         };
 
-        const elements = this._elements;
+        const keyUp = event => {
+            if (event && event.target)
+                event.target.blur();
 
-        elements.pauseButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 32})));
-        elements.resetButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 13})));
-        elements.leftButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 37})));
-        elements.upButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 38})));
-        elements.rightButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 39})));
-        elements.downButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 40})));
-        elements.helpButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 27})));
-        elements.scoreTableButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 84})));
-        elements.colorsEnableButton.addEventListener('click', vibrationClick(() => this.colorsEnable = !this.colorsEnable));
-        elements.vibrationEnableButton.addEventListener('click',
-            vibrationClick(() => this.vibrationEnable = !this.vibrationEnable));
-        elements.repoLinkButton.addEventListener('click', vibrationClick(() => this._onKeyUp({keyCode: 71})));
+            if (this._keyPressed) {
+                this._onKeyUp(this._keyPressed);
+                this._keyPressed = null;
+            }
+        };
+
+        const elements = this._elements;
+        const throwKeyDown = event => {
+            if (event && event.target)
+                event.target.blur();
+            const evt = {keyCode: 1032};
+            this._onKeyDown(evt);
+            this._keyPressed = evt;
+
+            if (this.vibrationEnable)
+                navigator.vibrate(35);
+        };
+        const pauseKeyDown = keyDown(27);
+        const resetKeyDown = keyDown(13);
+        const leftKeyDown = keyDown(37);
+        const upKeyDown = keyDown(38);
+        const rightKeyDown = keyDown(39);
+        const downKeyDown = keyDown(40);
+        const helpKeyDown = keyDown(72);
+        const scoreKeyDown = keyDown(84);
+        const colorsKeyDown = keyDown(67);
+        const vibrationKeyDown = keyDown(86);
+        const repoLinkKeyDown = keyDown(71);
+        const touchDevice = Boolean(('ontouchstart' in window) || navigator.maxTouchPoints);
+        const eventName = touchDevice ? 'touchstart' : 'mousedown';
+
+        elements.pauseButton.addEventListener(eventName, pauseKeyDown);
+        elements.resetButton.addEventListener(eventName, resetKeyDown);
+        elements.leftButton.addEventListener(eventName, leftKeyDown);
+        elements.upButton.addEventListener(eventName, upKeyDown);
+        elements.rightButton.addEventListener(eventName, rightKeyDown);
+        elements.downButton.addEventListener(eventName, downKeyDown);
+        elements.helpButton.addEventListener(eventName, helpKeyDown);
+        elements.scoreTableButton.addEventListener(eventName, scoreKeyDown);
+        elements.colorsEnableButton.addEventListener(eventName, colorsKeyDown);
+        elements.vibrationEnableButton.addEventListener(eventName, vibrationKeyDown);
+        elements.repoLinkButton.addEventListener(eventName, repoLinkKeyDown);
+        elements.throwButton.addEventListener(eventName, throwKeyDown);
+        window.addEventListener(touchDevice ? 'touchend' : 'mouseup', keyUp);
     }
 
     _redrawDisplay() {
@@ -795,6 +832,10 @@ export default class Game {
         const done = nameField.querySelector('.name-field__symbol_done');
         done.addEventListener('click', this._sendScore.bind(this));
         this._keyboard.push(done);
+
+        const cancel = nameField.querySelector('.name-field__symbol_cancel');
+        cancel.addEventListener('click', () => this.nameFieldMode = false);
+        this._keyboard.push(cancel);
     }
 
     async _sendScore() {
@@ -821,13 +862,13 @@ export default class Game {
                 this._setActiveButton(Math.max((Math.floor(index / 8) - 1) * 8 + (index % 8), 0));
                 break;
             case 1: // down
-                this._setActiveButton(Math.min((Math.floor(index / 8) + 1) * 8 + (index % 8), len - 1));
+                this._setActiveButton(Math.min((Math.floor(index / 8) + 1) * 8 + (index % 8), len - 2));
                 break;
             case 2: // left
                 this._setActiveButton(Math.max(index - 1, 0));
                 break;
             case 3: // right
-                this._setActiveButton(Math.max(index + 1, 0));
+                this._setActiveButton(Math.min(index + 1, len - 1));
                 break;
         }
     }
