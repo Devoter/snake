@@ -109,6 +109,8 @@ export default class Game {
         this._cellRenderer = cellRenderer;
         this._nameMaxLength = nameMaxLength;
         this.name = '';
+        this._elements.help.querySelector('.help__version').innerHTML = VERSION;
+        this._elements.help.querySelector('.help__copyleft').innerHTML = COPY_YEAR;
 
         this.nextIteration = this.nextIteration.bind(this);
         this._onKeyUp = this._onKeyUp.bind(this);
